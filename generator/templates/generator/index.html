@@ -1,3 +1,78 @@
-<h1>Infinite Labyrinth</h1>
-<h2>{{character.char_name}}</h2>
-<h3>{{character.char_description}}</h3>
+{% extends "generator/base.html" %}
+{% load staticfiles %}
+
+{% block javascript %}
+  <script>
+    $("form").submit(function (event) {
+    	event.preventDefault();
+
+    	var type = $(this).parent().attr("id");
+      $.ajax({
+        url: 'ajax/generate/',
+        data: {
+          'type': type
+        },
+        dataType: 'json',
+        success: handleRequest
+      });
+    });
+
+    function handleRequest(data) {
+    	if (data.type == 'character') {
+    		$("#character em").html(data.character.char_name);
+    		$("#character div").html(data.character.char_description);
+    	} else if (data.type == 'room') {
+    		$("#room div").html(data.room);
+    	}	else if (data.type == 'loot') {
+    		$("#loot div").html(data.loot);
+    	}
+    }
+  </script>
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+  <div class="row">
+  	<div class="col-md-12 text-center">
+  		<h1>Infinite Labyrinth</h1>
+  		<div>- Generate Infinite Content -</div>
+  	</div>
+    <div class="col-md-4">
+      <h3 class="text-center">Characters</h3>
+      <div id="character">
+				<form class="text-center" method="post">
+				{% csrf_token %}
+				<button type="submit" class="btn btn-default">Generate</button>
+				</form>
+				<br>
+				<em>{{character.char_name}}</em>
+				<div style="white-space:pre-line;">{{character.char_description}}</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <h3 class="text-center">Rooms</h3>
+      <div id="room">
+      	<form class="text-center" method="post">
+				{% csrf_token %}
+				<button type="submit" class="btn btn-default">Generate</button>
+				</form>
+				<br>
+      	<div style="white-space:pre-line;">{{room}}</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <h3 class="text-center">Loot</h3>
+      <div id="loot">
+      	<form class="text-center" method="post">
+				{% csrf_token %}
+				<button type="submit" class="btn btn-default">Generate</button>
+				</form>
+				<br>
+      	<div style="white-space:pre-line;">{{loot}}</div>
+      </div>
+    </div>
+  </div> <!-- row -->
+</div> <!-- container -->
+
+{% endblock %}
