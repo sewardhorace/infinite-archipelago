@@ -8,7 +8,7 @@ from django.core import serializers
 from infinitelabyrinth.settings import BASE_DIR
 from core.namer import CharacterNamer
 from core.scrambler import Scrambler
-from .models import Character
+from .models import Character, Room
 
 
 input_data = {}
@@ -25,23 +25,8 @@ namer = CharacterNamer(names_corpus)
 
 
 def index(request):
-    char_format_string = ('- {race} {char_detail_physical}.\n'
-        '- {subject} {char_trait_attitude}.\n'
-        '- {subject} {char_trait_manner}.\n'
-        '- {subject} {char_ability_competency}.\n'
-        '- {subject} {char_ability_move}.\n'
-        '- {subject} is {char_inventory}.')
-
-    char_name = scrambler.scramble(namer.full_name_string())
-    char_description = scrambler.scramble(char_format_string, random.choice(['m', 'f']))
-    character = Character(char_name=char_name, char_description=char_description)
-
-    room_format_string = ('- the room is 25ft x 25ft.\n'
-        '- {construction}.\n'
-        '- {atmosphere}.\n'
-        '- {feature}.')
-    room_description = scrambler.scramble(room_format_string)
-    room = room_description
+    character = Character.generate(scrambler, namer)
+    room = Room.generate(scrambler)
 
     loot_format_string = '{item_misc}'
     loot = scrambler.scramble(loot_format_string)
@@ -56,38 +41,30 @@ def index(request):
 def generate(request):
     data = {}
     if request.GET.get('type') == 'character':
-        char_format_string = ('- {race} {char_detail_physical}.\n'
-            '- {subject} {char_trait_attitude}.\n'
-            '- {subject} {char_trait_manner}.\n'
-            '- {subject} {char_ability_competency}.\n'
-            '- {subject} {char_ability_move}.\n'
-            '- {subject} is {char_inventory}.')
-
-        char_name = scrambler.scramble(namer.full_name_string())
-        char_description = scrambler.scramble(char_format_string, random.choice(['m', 'f']))
+        character = Character.generate(scrambler, namer)
         data = {
             'type': 'character',
             'character': {
-                'char_name':char_name,
-                'char_description': char_description
+                'char_name': character.char_name,
+                'char_description': character.char_description
             }
         }
     elif request.GET.get('type') == 'room':
-        room_format_string = ('- the room is 25ft x 25ft.\n'
-        '- {construction}.\n'
-        '- {atmosphere}.\n'
-        '- {feature}.')
-        room_description = scrambler.scramble(room_format_string)
+        room = Room.generate(scrambler)
         data = {
             'type': 'room',
-            'room': room_description
+            'room': room.room_description
         }
     elif request.GET.get('type') == 'loot':
         loot_format_string = '{item_misc}'
-        loot_description = scrambler.scramble(loot_format_string)
+        loot = scrambler.scramble(loot_format_string)
         data = {
             'type': 'loot',
-            'loot': loot_description
+            'loot': loot
         }
     # data = serializers.serialize("json", data)
     return JsonResponse(data)
+
+def canvastest(request):
+    context = {}
+    return render(request, 'generator/canvastest.html', context)
