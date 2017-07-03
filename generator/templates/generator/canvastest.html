@@ -13,37 +13,61 @@
       this.width = width*SCALE;
       this.height = height*SCALE;
       this.status = 'explored';
-      this.color = 'white';
-      this.update = function (ctx) {
+      this.color = INACTIVECOLOR;
+      this.contains = function (x, y) {
+        return this.x <= x && x <= this.x + this.width &&
+               this.y <= y && y <= this.y + this.height;
+      };
+      this.draw = function (ctx) {
         ctx.fillStyle = this.color;
         ctx.fillRect(this.x, this.y, this.width, this.height);
       };
-    }
+    };
     function Corridor (path) {
-      this.path = path;
-      this.color = 'white';
-      this.update = function (ctx) {
+      this.color = INACTIVECOLOR;
+      this.rects = [];
+      for (var i = 0; i < path.length-1; i++){
+        var x = path[i].x*SCALE;
+        var y = path[i].y*SCALE;
+        var nextX = path[i+1].x*SCALE;
+        var nextY = path[i+1].y*SCALE;
+        var width = nextX-x || SCALE;
+        var height = nextY-y || SCALE;
+        var rect = {
+          x: x,
+          y: y,
+          width: width,
+          height: height
+        };
+        this.rects.push(rect);
+      }
+      this.contains = function (x, y) {
+        for (var i = 0; i < this.rects.length; i++) {
+          var rect = this.rects[i];
+          if (rect.x <= x && x <= rect.x + rect.width &&
+              rect.y <= y && y <= rect.y + rect.height) {
+            return true;
+          }
+        }
+        return false;
+      };
+      this.draw = function (ctx) {
         ctx.fillStyle = this.color;
-        for (i = 0; i < this.path.length-1; i++){
-          var x = this.path[i].x*SCALE;
-          var y = this.path[i].y*SCALE;
-          var nextX = this.path[i+1].x*SCALE;
-          var nextY = this.path[i+1].y*SCALE;
-          var width = nextX-x || SCALE;
-          var height = nextY-y || SCALE;
-          ctx.fillRect(x, y, width, height);
+        for (var i = 0; i < this.rects.length; i++) {
+          var rect = this.rects[i];
+          ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
         }
       };
-    }
+    };
     function Door (x, y, side, status) {
       this.x = x*SCALE;
       this.y = y*SCALE;
       this.side = side;
       this.status = status;
       this.size = SCALE/2;
-      this.color = 'white';
+      this.color = INACTIVECOLOR;
       this.outlineColor = 'black';
-      this.update = function(ctx) {
+      this.draw = function(ctx) {
         ctx.lineWidth=LINEWIDTH;
         if (this.status == 'open') {
           ctx.fillStyle = this.color;
@@ -61,7 +85,7 @@
           ctx.strokeRect(this.x-offset, this.y+offset, this.size, this.size);
         }
       };
-    }
+    };
 
     var rooms = [
       new Room(1, 1, 5, 5),
@@ -79,32 +103,55 @@
       new Door(8, 8, 'north', 'open'),
       new Door(10, 10, 'east', 'closed')
     ];
-
+    
     var dungeonMapper = {
       canvas : document.getElementById("canvas"),
+      transforms : {
+        scaleFactor : 5.00,
+        panX : 0,
+        panY : 0
+      },
       start: function () {
         this.context = this.canvas.getContext("2d");
-        var getMousePos = this.getMousePos;
-        var canvas = this.canvas;
-        var context = this. context;
-        this.canvas.addEventListener('mousemove', function(e) {
-          var mousePos = getMousePos(e);
-        }, false);
+        this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this), false);
+        this.draw();
       },
       clear: function () {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
       },
-      getMousePos: function (e) {
-        var rect = this.canvas.getBoundingClientRect();
+      handleMouseMove: function (e) {
+        this.mousePos = this.getMousePos(e, this.canvas);
+        for (var i = 0; i < this.rooms.length; i++){
+          var room = this.rooms[i];
+          if (room.contains(this.mousePos.x, this.mousePos.y)) {
+            room.color = 'white';
+          } else {
+            room.color = INACTIVECOLOR;
+          }
+        }
+        for (var i = 0; i < this.corridors.length; i++){
+          var corridor = this.corridors[i];
+          if (corridor.contains(this.mousePos.x, this.mousePos.y)) {
+            corridor.color = 'white';
+          } else {
+            corridor.color = INACTIVECOLOR;
+          }
+        }
+        this.draw();
+      },
+      getMousePos: function (e, canvas) {
+        var rect = canvas.getBoundingClientRect();
+        var rawX = e.clientX - rect.left;
+        var rawY = e.clientY - rect.top;
         return {
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top
+          x: rawX/this.transforms.scaleFactor,
+          y: rawY/this.transforms.scaleFactor
         };
       },
       drawGrid: function () {
-        for (i = SCALE; i < this.canvas.width; i+=SCALE) {
-          var ctx = this.context;
+        var ctx = this.context;
+        for (var i = SCALE; i < this.canvas.width; i+=SCALE) {
           ctx.beginPath();
           ctx.moveTo(i, 0);
           ctx.lineTo(i, this.canvas.height);
@@ -112,8 +159,7 @@
           ctx.strokeStyle = 'black';
           ctx.stroke();
         }
-        for (i = SCALE; i < this.canvas.height; i+=SCALE) {
-          var ctx = this.context;
+        for (var i = SCALE; i < this.canvas.height; i+=SCALE) {
           ctx.beginPath();
           ctx.moveTo(0, i);
           ctx.lineTo(this.canvas.width, i);
@@ -122,21 +168,21 @@
           ctx.stroke();
         }
       },
-      update: function () {
+      draw: function () {
         var ctx = this.context;
         this.clear();
         ctx.save();
-        ctx.scale(5,5);
+        ctx.scale(this.transforms.scaleFactor,this.transforms.scaleFactor);
         ctx.translate(0,0); //translate makes more sense after scale()
-        for (i = 0; i < this.rooms.length; i++) {
-          this.rooms[i].update(ctx);
+        for (var i = 0; i < this.rooms.length; i++) {
+          this.rooms[i].draw(ctx);
         }
-        for (i = 0; i < this.corridors.length; i++) {
-          this.corridors[i].update(ctx);
+        for (var i = 0; i < this.corridors.length; i++) {
+          this.corridors[i].draw(ctx);
         }
         this.drawGrid();
-        for (i = 0; i < this.doors.length; i++) {
-          this.doors[i].update(ctx);
+        for (var i = 0; i < this.doors.length; i++) {
+          this.doors[i].draw(ctx);
         }
         ctx.restore();
       }
@@ -146,8 +192,6 @@
     dungeonMapper.corridors = corridors;
     dungeonMapper.doors = doors;
     dungeonMapper.start();
-    dungeonMapper.update();
-
   </script>
 {% endblock %}
 
