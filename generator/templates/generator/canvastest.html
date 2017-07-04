@@ -5,34 +5,46 @@
   <script>
     var SCALE = 5;
     var LINEWIDTH = SCALE*0.05;
+    var ACTIVECOLOR = 'white';
     var INACTIVECOLOR = '#555555';
 
     function Room (x, y, width, height) {
+      this.status = 'inactive';
+      this.colors = {
+        active: ACTIVECOLOR,
+        inactive: INACTIVECOLOR
+      };
       this.x = x*SCALE;
       this.y = y*SCALE;
       this.width = width*SCALE;
       this.height = height*SCALE;
-      this.status = 'explored';
-      this.color = INACTIVECOLOR;
       this.contains = function (x, y) {
         return this.x <= x && x <= this.x + this.width &&
                this.y <= y && y <= this.y + this.height;
       };
       this.draw = function (ctx) {
-        ctx.fillStyle = this.color;
+        if (this.status == 'active') {
+          ctx.fillStyle = this.colors.active;
+        } else {
+          ctx.fillStyle = this.colors.inactive;
+        }
         ctx.fillRect(this.x, this.y, this.width, this.height);
       };
     };
     function Corridor (path) {
-      this.color = INACTIVECOLOR;
+      this.status = 'inactive';
+      this.colors = {
+        active: ACTIVECOLOR,
+        inactive: INACTIVECOLOR
+      };
       this.rects = [];
       for (var i = 0; i < path.length-1; i++){
         var x = path[i].x*SCALE;
         var y = path[i].y*SCALE;
         var nextX = path[i+1].x*SCALE;
         var nextY = path[i+1].y*SCALE;
-        var width = nextX-x || SCALE;
-        var height = nextY-y || SCALE;
+        var width = Math.abs(nextX-x) || SCALE;
+        var height = Math.abs(nextY-y) || SCALE;
         var rect = {
           x: x,
           y: y,
@@ -52,38 +64,62 @@
         return false;
       };
       this.draw = function (ctx) {
-        ctx.fillStyle = this.color;
+        if (this.status == 'active') {
+          ctx.fillStyle = this.colors.active;
+        } else {
+          ctx.fillStyle = this.colors.inactive;
+        }
         for (var i = 0; i < this.rects.length; i++) {
           var rect = this.rects[i];
           ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
         }
       };
     };
-    function Door (x, y, side, status) {
-      this.x = x*SCALE;
-      this.y = y*SCALE;
-      this.side = side;
+    function Door (x, y, direction, status) {
       this.status = status;
-      this.size = SCALE/2;
-      this.color = INACTIVECOLOR;
-      this.outlineColor = 'black';
+      this.colors = {
+        openFill: INACTIVECOLOR,
+        openOutline: 'black',
+        closedFill: 'black',
+        closedOutline: INACTIVECOLOR
+      };
+      this.width = SCALE/2;
+      this.height = this.width;
+      var offset = SCALE/4;
+      x = x*SCALE;
+      y = y*SCALE;
+      switch (direction) {
+        case 'north':
+          this.x = x+offset;
+          this.y = y-offset;
+          break;
+        case 'south':
+          this.x = x+offset;
+          this.y = y-offset+SCALE;
+          break;
+        case 'east' :
+          this.x = x-offset+SCALE;
+          this.y = y+offset;
+          break;
+        case 'west' :
+          this.x = x-offset;
+          this.y = y+offset;
+      }
+      this.contains = function (x, y) {
+        return this.x <= x && x <= this.x + this.width &&
+               this.y <= y && y <= this.y + this.height;
+      };
       this.draw = function(ctx) {
-        ctx.lineWidth=LINEWIDTH;
         if (this.status == 'open') {
-          ctx.fillStyle = this.color;
-          ctx.strokeStyle = this.outlineColor
+          ctx.fillStyle = this.colors.openFill;
+          ctx.strokeStyle = this.colors.openOutline;
         } else {
-          ctx.fillStyle = this.outlineColor;
-          ctx.strokeStyle = this.color;
+          ctx.fillStyle = this.colors.closedFill;
+          ctx.strokeStyle = this.colors.closedOutline;
         }
-        var offset = this.size/2;
-        if (this.side == 'north'|| this.side == 'south'){
-          ctx.fillRect(this.x+offset, this.y-offset, this.size, this.size);
-          ctx.strokeRect(this.x+offset, this.y-offset, this.size, this.size);
-        } else {
-          ctx.fillRect(this.x-offset, this.y+offset, this.size, this.size);
-          ctx.strokeRect(this.x-offset, this.y+offset, this.size, this.size);
-        }
+        ctx.lineWidth=LINEWIDTH;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.strokeRect(this.x, this.y, this.width, this.height);
       };
     };
 
@@ -99,9 +135,10 @@
       ])
     ];
     var doors = [
-      new Door(6, 1, 'east', 'open'),
+      new Door(5, 1, 'east', 'open'),
+      new Door(1, 1, 'west', 'closed'),
       new Door(8, 8, 'north', 'open'),
-      new Door(10, 10, 'east', 'closed')
+      new Door(9, 10, 'east', 'closed')
     ];
     
     var dungeonMapper = {
@@ -109,45 +146,84 @@
       transforms : {
         scaleFactor : 5.00,
         panX : 0,
-        panY : 0
+        panY : 0,
+        prevPanX : 0,
+        prevPanY : 0
       },
       start: function () {
         this.context = this.canvas.getContext("2d");
+        this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this), false);
+        this.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this), false);
         this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this), false);
-        this.draw();
-      },
-      clear: function () {
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
-      },
-      handleMouseMove: function (e) {
-        this.mousePos = this.getMousePos(e, this.canvas);
-        for (var i = 0; i < this.rooms.length; i++){
-          var room = this.rooms[i];
-          if (room.contains(this.mousePos.x, this.mousePos.y)) {
-            room.color = 'white';
-          } else {
-            room.color = INACTIVECOLOR;
-          }
-        }
-        for (var i = 0; i < this.corridors.length; i++){
-          var corridor = this.corridors[i];
-          if (corridor.contains(this.mousePos.x, this.mousePos.y)) {
-            corridor.color = 'white';
-          } else {
-            corridor.color = INACTIVECOLOR;
-          }
-        }
+        this.canvas.addEventListener('DOMMouseScroll', this.handleScroll.bind(this), false);
+        this.canvas.addEventListener('mousewheel', this.handleScroll.bind(this), false);
         this.draw();
       },
       getMousePos: function (e, canvas) {
         var rect = canvas.getBoundingClientRect();
         var rawX = e.clientX - rect.left;
-        var rawY = e.clientY - rect.top;
+        var rawY = e.clientY - rect.top
+        var transformedX = rawX/this.transforms.scaleFactor-this.transforms.prevPanX;
+        var transformedY = rawY/this.transforms.scaleFactor-this.transforms.prevPanY;
         return {
-          x: rawX/this.transforms.scaleFactor,
-          y: rawY/this.transforms.scaleFactor
+          x: transformedX,
+          y: transformedY
         };
+      },
+      handleMouseDown: function (e) {
+        this.mouseIsDown = true;
+        this.prevMouseDownPos = this.getMousePos(e, this.canvas);
+        return e.preventDefault() && false;
+      },
+      handleMouseUp: function (e) {
+        this.mouseIsDown = false;
+        var mousePos = this.getMousePos(e, this.canvas);
+        this.transforms.prevPanX += mousePos.x - this.prevMouseDownPos.x;
+        this.transforms.prevPanY += mousePos.y - this.prevMouseDownPos.y;
+        return e.preventDefault() && false;
+      },
+      handleMouseMove: function (e) {
+        var mousePos = this.getMousePos(e, this.canvas);
+        if (this.mouseIsDown) {
+          this.handleDrag(mousePos);
+        } else {
+          this.handleHover(mousePos);
+        }
+        this.draw(); //TODO: should only draw if anything changes
+        return e.preventDefault() && false;
+      },
+      handleDrag: function (mousePos) {
+        this.transforms.panX = this.transforms.prevPanX + mousePos.x - this.prevMouseDownPos.x;
+        this.transforms.panY = this.transforms.prevPanY + mousePos.y - this.prevMouseDownPos.y;
+      },
+      handleHover: function (mousePos) {
+        for (var i = 0; i < this.rooms.length; i++){
+          var room = this.rooms[i];
+          if (room.contains(mousePos.x, mousePos.y)) {
+            room.status = 'active';
+          } else {
+            room.status = 'inactive';
+          }
+        }
+        for (var i = 0; i < this.corridors.length; i++){
+          var corridor = this.corridors[i];
+          if (corridor.contains(mousePos.x, mousePos.y)) {
+            corridor.status = 'active';
+          } else {
+            corridor.status = 'inactive';
+          }
+        }
+      },
+      handleScroll: function(e){
+        var delta = e.wheelDelta ? e.wheelDelta/120 : 0;
+        if (delta) this.zoom(delta);
+        return e.preventDefault() && false;
+      },
+      zoom: function(delta){
+        //TODO: translate during zoom based on mouse position
+        var factor = 1+delta/10;
+        this.transforms.scaleFactor *= factor;
+        this.draw();
       },
       drawGrid: function () {
         var ctx = this.context;
@@ -170,10 +246,11 @@
       },
       draw: function () {
         var ctx = this.context;
-        this.clear();
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         ctx.save();
-        ctx.scale(this.transforms.scaleFactor,this.transforms.scaleFactor);
-        ctx.translate(0,0); //translate makes more sense after scale()
+        ctx.scale(this.transforms.scaleFactor, this.transforms.scaleFactor);
+        ctx.translate(this.transforms.panX, this.transforms.panY);
         for (var i = 0; i < this.rooms.length; i++) {
           this.rooms[i].draw(ctx);
         }
