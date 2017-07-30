@@ -21,7 +21,11 @@
     	if (data.type == 'character') {
     		$("#character em").html(data.character.char_name);
     		$("#character div").html(data.character.char_description);
-    	} else if (data.type == 'room') {
+    	} else if (data.type == 'ship') {
+        $("#ship div").html(data.ship);
+      } else if (data.type == 'crew') {
+        $("#crew div").html(data.crew);
+      }else if (data.type == 'room') {
     		$("#room div").html(data.room);
     	}	else if (data.type == 'loot') {
     		$("#loot div").html(data.loot);
@@ -38,6 +42,7 @@
   		<h1>Infinite Labyrinth</h1>
   		<div>- Generate Infinite Content -</div>
   	</div>
+
     <div class="col-md-4">
       <h3 class="text-center">Characters</h3>
       <div id="character">
@@ -50,6 +55,31 @@
 				<div style="white-space:pre-line;">{{character.char_description}}</div>
       </div>
     </div>
+
+    <div class="col-md-4">
+      <h3 class="text-center">Ships</h3>
+      <div id="ship">
+        <form class="text-center" method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-default">Generate</button>
+        </form>
+        <br>
+        <div style="white-space:pre-line;">{{ship}}</div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <h3 class="text-center">Crews</h3>
+      <div id="crew">
+        <form class="text-center" method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-default">Generate</button>
+        </form>
+        <br>
+        <div style="white-space:pre-line;">{{crew}}</div>
+      </div>
+    </div>
+
     <div class="col-md-4">
       <h3 class="text-center">Rooms</h3>
       <div id="room">
@@ -61,6 +91,7 @@
       	<div style="white-space:pre-line;">{{room.room_description}}</div>
       </div>
     </div>
+
     <div class="col-md-4">
       <h3 class="text-center">Loot</h3>
       <div id="loot">
@@ -72,6 +103,7 @@
       	<div style="white-space:pre-line;">{{loot}}</div>
       </div>
     </div>
+
   </div> <!-- row -->
 </div> <!-- container -->
 

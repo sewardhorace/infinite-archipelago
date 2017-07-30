@@ -22,10 +22,11 @@ class Character(models.Model):
       return character
 
 class Room(models.Model):
-  height = models.PositiveSmallIntegerField() 
+  x = models.IntegerField()
+  y = models.IntegerField()
   width = models.PositiveSmallIntegerField()
-  x_origin = models.IntegerField()
-  y_origin = models.IntegerField()
+  height = models.PositiveSmallIntegerField() 
+  isActive = models.BooleanField()
   room_description = models.TextField()
   room_notes = models.TextField()
 
@@ -40,9 +41,31 @@ class Room(models.Model):
     room = Room(room_description=room_description)
     return room
 
-class Door(models.Model):
-  x_origin = models.IntegerField()
-  y_origin = models.IntegerField()
-
 class Corridor(models.Model):
+  '''
+  path (list of x,y coordinates as tuples?)
+  isActive = models.BooleanField()
+  corridor_description = models.TextField()
+  corridor_notes = models.TextField()
+  '''
+  pass
+
+class Door(models.Model):
+  x = models.IntegerField()
+  y = models.IntegerField()
+  direction = models.CharField(max_length=5)
+  isOpen = models.BooleanField()
+  corridor = models.ForeignKey(Corridor, on_delete=models.CASCADE)
+  room = models.ForeignKey(Room, on_delete=models.CASCADE)
+
+  '''
+  must create and save room and corridor before creating new door for foreign key
+  Door(x = x, y = y, direction = 'north', corridor = c, room = r)
+  '''
+
+class Sector(models.Model):
+  '''
+  needs to contain a reference to the corridors that exit its borders, 
+  for the purpose of creating the entrance corridors for the neighboring sectors
+  '''
   pass
