@@ -39,3 +39,38 @@ for worksheet in worksheets:
 	
 with open('core/input_data/data.json', 'w') as f:
 	json.dump(data, f)
+
+data = {}
+sheet = workbook.worksheet('Endpoints')
+
+headers = sheet.row_values(1)
+header_count = len(list(filter(None, headers)))
+
+for i in range(header_count):
+	values = sheet.col_values(i+1)
+	values = list(filter(None, values))
+
+	key = values[0]
+	print("writing endpoints " + key + "...")
+	data[key] = "\n".join(values[1:])
+	
+with open('core/input_data/endpoints.json', 'w') as f:
+	json.dump(data, f)
+
+data = {}
+sheet = workbook.worksheet('Corpora')
+
+headers = sheet.row_values(1)
+header_count = len(list(filter(None, headers)))
+
+for i in range(header_count):
+	values = sheet.col_values(i+1)
+	values = list(filter(None, values))
+
+	key = values[0]
+	print("writing markov corpora " + key + "...")
+	data[key] = values[1:]
+	
+with open('core/corpora/data.json', 'w') as f:
+	json.dump(data, f)
+

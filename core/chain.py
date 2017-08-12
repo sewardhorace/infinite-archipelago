@@ -9,6 +9,7 @@ class Chain:
 		return
 
 	def train(self, corpus):
+		self.graph = {}
 		for item in corpus:
 			self.beginnings.append(item[0:2])
 			item += " "
@@ -22,7 +23,7 @@ class Chain:
 				else:
 					self.graph[key] = [value]
 
-	def generate(self, maximum=100):
+	def generate(self, maximum=15):
 		start = random.choice(self.beginnings)
 		result = start
 

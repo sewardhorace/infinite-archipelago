@@ -172,6 +172,7 @@
         this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this), false);
         this.canvas.addEventListener('DOMMouseScroll', this.handleScroll.bind(this), false);
         this.canvas.addEventListener('mousewheel', this.handleScroll.bind(this), false);
+        this.canvas.addEventListener('contextmenu', this.handleRightClick.bind(this), false);
         this.draw();
       },
       getMousePos: function (e, canvas) {
@@ -220,6 +221,10 @@
           }
         });
         this.draw();
+      },
+      handleRightClick: function (e) {
+        e.preventDefault();
+        console.log("right clicked");
       },
       handleMouseDown: function (e) {
         e.preventDefault();
@@ -315,7 +320,7 @@
 
     $(function() {
       $.ajax({
-        url: '/generator/ajax/map_data/',
+        url: '/ajax/map_data/',
         dataType: 'json',
         success: handleRequest
       });

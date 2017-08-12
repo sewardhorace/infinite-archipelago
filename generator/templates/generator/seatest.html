@@ -1,0 +1,245 @@
+{% extends "generator/base.html" %}
+{% load staticfiles %}
+
+{% block javascript %}
+  <script>
+    var SCALE = 1;
+    var LINEWIDTH = SCALE*0.05;
+    var SEACOLOR = '#42b3f4';
+    var GRIDCOLOR = '#418cf4';
+    var ACTIVECOLOR = 'green';
+    var HOVERCOLOR = 'white';
+    var INACTIVECOLOR = 'red';
+
+    function Component (id, x, y, isActive, category, details) {
+      this.id = id;
+      this.x = x*SCALE;
+      this.y = y*SCALE;
+      this.isActive = isActive;
+      this.category = category;
+      this.details = details;
+      this.hover = false;
+      this.colors = {
+        active: ACTIVECOLOR,
+        hover: HOVERCOLOR,
+        inactive: INACTIVECOLOR
+      };
+      this.width = 1;
+      this.height = 1;
+      this.contains = function (x, y) {
+        return this.x <= x && x <= this.x + this.width &&
+               this.y <= y && y <= this.y + this.height;
+      };
+      this.draw = function (ctx) {
+        if (this.isActive) {
+          ctx.fillStyle = this.colors.active;
+        } else if (this.hover) {
+          ctx.fillStyle = this.colors.hover;
+        } else {
+          ctx.fillStyle = this.colors.inactive
+        }
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+      };
+      this.displayDetails = function (div) {
+        div.innerHTML = "";
+        for (i=0; i<this.details.length; i++) {
+          var textarea = document.createElement('textarea');
+          textarea.value = this.details[i].content;
+          div.append(textarea);
+        }
+        
+      };
+    };
+
+    var seaMapper = {
+      canvas : document.getElementById("canvas"),
+      displayDiv : document.getElementById("details"),
+      transforms : {
+        scaleFactor : 10.00,
+        panX : 0,
+        panY : 0,
+        prevPanX : 0,
+        prevPanY : 0
+      },
+      start: function () {
+        this.context = this.canvas.getContext("2d");
+        this.canvas.addEventListener('click', this.handleClick.bind(this), false);
+        this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this), false);
+        this.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this), false);
+        this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this), false);
+        this.canvas.addEventListener('DOMMouseScroll', this.handleScroll.bind(this), false);
+        this.canvas.addEventListener('mousewheel', this.handleScroll.bind(this), false);
+        this.canvas.addEventListener('contextmenu', this.handleRightClick.bind(this), false);
+        this.draw();
+      },
+      getMousePos: function (e, canvas) {
+        var rect = canvas.getBoundingClientRect();
+        var rawX = e.clientX - rect.left;
+        var rawY = e.clientY - rect.top
+        var transformedX = rawX/this.transforms.scaleFactor-this.transforms.prevPanX;
+        var transformedY = rawY/this.transforms.scaleFactor-this.transforms.prevPanY;
+        return {
+          x: transformedX,
+          y: transformedY
+        };
+      },
+      checkCollisions: function (components, mousePos, callback) {
+        //TODO: it is currently possible to hover/click on two neighboring components at once
+        for (var i = 0; i < components.length; i++){
+          var isColliding = components[i].contains(mousePos.x, mousePos.y) ? true : false;
+          callback(components[i], isColliding);
+        }
+      },
+      handleClick: function (e) {
+        //TODO: don't set components to active if the user was dragging to pan the view
+        e.preventDefault();
+        var mousePos = this.getMousePos(e, this.canvas);
+        var div = this.displayDiv;
+        this.checkCollisions(this.components, mousePos, function(component, isColliding) {
+          if (isColliding) {
+            component.isActive = true;
+            component.displayDetails(div);
+          } else {
+            component.isActive = false;
+          }
+        });
+        this.draw();
+      },
+      handleRightClick: function (e) {
+        e.preventDefault();
+        var mousePos = this.getMousePos(e, this.canvas);
+        var component = new Component(mousePos.x, mousePos.y, false, 'cat', 2);
+        this.components.push(component);
+        console.log(mousePos);
+      },
+      handleMouseDown: function (e) {
+        e.preventDefault();
+        this.mouseIsDown = true;
+        this.prevMouseDownPos = this.getMousePos(e, this.canvas);
+      },
+      handleMouseUp: function (e) {
+        e.preventDefault();
+        this.mouseIsDown = false;
+        var mousePos = this.getMousePos(e, this.canvas);
+        this.transforms.prevPanX += mousePos.x - this.prevMouseDownPos.x;
+        this.transforms.prevPanY += mousePos.y - this.prevMouseDownPos.y;
+      },
+      handleMouseMove: function (e) {
+        e.preventDefault();
+        var mousePos = this.getMousePos(e, this.canvas);
+        if (this.mouseIsDown) {
+          this.handleDrag(mousePos);
+        } else {
+          this.handleHover(mousePos);
+        }
+        this.draw(); //TODO: use animationFrame instead of manually calling draw()
+      },
+      handleDrag: function (mousePos) {
+        this.transforms.panX = this.transforms.prevPanX + mousePos.x - this.prevMouseDownPos.x;
+        this.transforms.panY = this.transforms.prevPanY + mousePos.y - this.prevMouseDownPos.y;
+      },
+      handleHover: function (mousePos) {
+        this.checkCollisions(this.components, mousePos, function(component, isColliding){
+          if (isColliding) {
+            component.hover = true;
+          } else {
+            component.hover = false;
+          }
+        });
+      },
+      handleScroll: function(e){
+        //TODO: translate during zoom based on mouse position
+        e.preventDefault();
+        var delta = e.wheelDelta ? e.wheelDelta/120 : 0;
+        if (delta) {
+          var factor = 1+delta/10;
+          this.transforms.scaleFactor *= factor;
+          this.draw();
+        }
+      },
+      drawGrid: function () {
+        var ctx = this.context;
+        for (var i = SCALE; i < this.canvas.width; i+=SCALE) {
+          ctx.beginPath();
+          ctx.moveTo(i, 0);
+          ctx.lineTo(i, this.canvas.height);
+          ctx.lineWidth=LINEWIDTH;
+          ctx.strokeStyle = GRIDCOLOR;
+          ctx.stroke();
+        }
+        for (var i = SCALE; i < this.canvas.height; i+=SCALE) {
+          ctx.beginPath();
+          ctx.moveTo(0, i);
+          ctx.lineTo(this.canvas.width, i);
+          ctx.lineWidth=LINEWIDTH;
+          ctx.strokeStyle = GRIDCOLOR;
+          ctx.stroke();
+        }
+      },
+      draw: function () {
+        var ctx = this.context;
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        ctx.fillStyle = SEACOLOR;
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        ctx.save();
+        ctx.scale(this.transforms.scaleFactor, this.transforms.scaleFactor);
+        ctx.translate(this.transforms.panX, this.transforms.panY);
+        this.drawGrid();
+        for (var i = 0; i < this.components.length; i++) {
+          this.components[i].draw(ctx);
+        }
+        ctx.restore();
+      }
+    };
+
+    var requests = {
+      loadMap: function (data) {
+        console.log(data);
+        var components = data.game.components.map(function(c) {
+          return new Component(c.id, c.x, c.y, c.isActive, c.category, c.details);
+        });
+        seaMapper.components = components;
+        seaMapper.start();
+      },
+      loadDetails: function (data) {
+        console.log(data);
+      },
+      saveComponent: function (data) {
+        console.log(data);
+      },
+      saveDetail: function (data) {
+        console.log(data);
+      },
+    };
+
+
+    $(function() {
+      $.ajax({
+        url: '/ajax/map_data/',
+        dataType: 'json',
+        success: requests.loadMap
+      });
+    });
+
+  </script>
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+  <div class="row">
+  	<div class="col-md-12 text-center">
+  		<h1>Canvas Test</h1>
+  		<div>- Generate Infinite Content -</div>
+  	</div>
+    <div class="col-md-12">
+      <canvas id="canvas" width="500" height="500" style="border:1px solid #000000;">
+      </canvas>
+      <div id="details">
+        <textarea>Blah</textarea>
+      </div>
+    </div>
+  </div> <!-- row -->
+</div> <!-- container -->
+
+{% endblock %}

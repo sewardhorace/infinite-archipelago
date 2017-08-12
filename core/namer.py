@@ -1,73 +1,52 @@
 import random
 from .chain import Chain
-from .helpers import Mapper, random_from_curve
+from string import Formatter
 
-MEAN_NAMES = 2
-MIN_NAMES = 1
-MAX_NAMES = 4
-
-MEAN_TITLES = -1
-MIN_TITLES = 0
-MAX_TITLES = 4 #adj honorific *name* the adj nickname
-
-class CharacterNamer:
-
-    def __init__(self, corpus):
+#TODO: figure out how to do this with inheritance (Scrambler)
+class Namer:
+    def __init__(self, data):
+        #'data' is a dictionary of lists of seed names
         self.generator = Chain(2)
-        self.generator.train(corpus)
+        self.data = data
 
-    def full_name_string(self):
-        name = self.__get_names()
-        titles_amt = self.__random_amt_titles()
-        format_string = self.__title_format_string(name, titles_amt)
-        return format_string
+    def __get_field_list(self, text):
+        formatter = Formatter()
+        fields = []
+        for literal_text, field_name, format_spec, conversion in formatter.parse(text):
+            if field_name is not None:
+                fields.append(field_name)
+        return fields
 
-    def __get_names(self):
-        name = ''
-        names_amt = self.__random_amt_of_names()
-        for i in range(names_amt):
-            name += self.generator.generate(maximum=10) + ' '
-        name = name[:-1]
-        return name
+    def __get_field_map(self, field_list):
+        field_map = {}
+        for field in field_list:
+            field_map[field] = self.__get_value(field)
+        return field_map
 
-    def __random_amt_of_names(self):
-        return round(random_from_curve(MEAN_NAMES, MIN_NAMES, MAX_NAMES))
-
-    def __random_amt_titles(self):
-        return round(random_from_curve(MEAN_TITLES, MIN_TITLES, MAX_TITLES))
-
-    def __title_format_string(self, name, titles_amt):
-        titles_all = ['adj1','honorific','adj2','nickname']
-        titles_map = {'name':name}
-        for t in titles_all:
-            titles_map[t] = ''
-
-        random.shuffle(titles_all)
-        titles = titles_all[:titles_amt]
-        
-        suffix = False
-        if 'ajd1' in titles:
-            titles_map['adj1'] = '{Char_name_adj} '
-        if 'honorific' in titles:
-            titles_map['honorific'] = '{Char_name_honorific} '
-        if 'adj2' in titles:
-            titles_map['adj2'] = ' {Char_name_adj}'
-            suffix = True
-        if 'nickname' in titles:
-            titles_map['nickname'] = ' {Char_name_nickname}'
-            suffix = True
-        if suffix:
-            titles_map['the'] = ' the'
+    def __get_value(self, key):
+        if key in self.data:
+            corpus = self.data[key]
+            self.generator.train(corpus)
+            name = self.generator.generate(maximum=10)
+            return name
         else:
-            titles_map['the'] = ''
+            return '{' + key + '}'
+        
 
-        pre_formatter = "{adj1}{honorific}{name}{the}{adj2}{nickname}"
-        title_formatter = pre_formatter.format_map(titles_map)
-        return title_formatter
+    def generate(self, text):
+        field_list_previous = None
+        while True:
+            field_list_current = self.__get_field_list(text)
+            if field_list_current == field_list_previous:
+                return text
+            text = text.format_map(self.__get_field_map(field_list_current))
+            field_list_previous = field_list_current
 
-# with open("corpora/char_names_3.txt") as f:
-#     corpus = f.read().lower().split()
+        
+# input_data = {}
+# with open('corpora/data.json') as json_data:
+#     input_data = json.load(json_data)
 
-# print(test.full_name_string())
-
-
+# namer = Namer(input_data)
+# text = namer.generate("I cast {name_spell_adj} {name_spell_noun}")
+# print(text)
