@@ -1,4 +1,6 @@
-from django.shortcuts import render
+import json
+
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.core import serializers
 from django.views.generic.detail import BaseDetailView
@@ -7,6 +9,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from core.namer import Namer
 from core.scrambler import Scrambler
 from .models import Detail, Component, Game
+from .forms import ComponentForm, DetailForm
 
 
 #will remove the below file access stuff when the data is stored in the db
@@ -36,44 +39,6 @@ def index(request):
     }
     return render(request, 'generator/index.html', context)
 
-class JSONResponseMixin(object):
-    """
-    A mixin that can be used to render a JSON response.
-    """
-    def render_to_json_response(self, context, **response_kwargs):
-        """
-        Returns a JSON response, transforming 'context' to make the payload.
-        """
-        return JsonResponse(
-            self.get_data(context),
-            **response_kwargs
-        )
-
-    def get_data(self, context):
-        """
-        Returns an object that will be serialized as JSON by json.dumps().
-        """
-        # Note: This is *EXTREMELY* naive; in reality, you'll need
-        # to do much more complex handling to ensure that arbitrary
-        # objects -- such as Django model instances or querysets
-        # -- can be serialized as JSON.
-        return context
-
-class ComponentCreate(CreateView):
-    model = Component
-    fields = ['name']
-
-class ComponentUpdate(UpdateView):
-    model = Component
-    fields = ['name']
-
-class ComponentDelete(DeleteView):
-    model = Component
-
-class ComponentCreate(CreateView):
-    model = Component
-    fields = ['name']
-
 def generate(request):
     format_text = request.GET.get('text')
     text = scrambler.scramble(format_text)
@@ -84,7 +49,7 @@ def generate(request):
     # data = serializers.serialize("json", data)
     return JsonResponse(data)
 
-def map_data(request):
+def game(request):
     game = list(Game.objects.filter(id=1).values())[0]
     components = list(Component.objects.filter(game=game["id"]).values())
     game["components"] = components
@@ -92,7 +57,78 @@ def map_data(request):
         details = list(Detail.objects.filter(component=component["id"]).values())
         component["details"] = details
     response = dict(game=game)
-    # response = dict(components=list(Component.objects.values()))
+    return JsonResponse(response)
+
+def components_create(request):
+    response = dict()
+    if request.method == 'POST':
+        component_data = json.loads(request.body.decode('utf-8'))
+        form = ComponentForm(component_data)
+        if form.is_valid():
+            component = form.save()
+            response['component'] = dict(list(Component.objects.filter(id=component.id).values())[0])
+            return JsonResponse(response)
+        else:
+            # TODO
+            print("suk it")
+    return JsonResponse(response)
+
+def components_update(request):
+    response = dict()
+    if request.method == 'POST':
+        component_data = json.loads(request.body.decode('utf-8'))
+        component = get_object_or_404(Component, id=int(component_data['id']))
+        form = ComponentForm(component_data, instance=component)
+        if form.is_valid():
+            form.save()
+            response['component'] = dict(list(Component.objects.filter(id=component.id).values())[0])
+            return JsonResponse(response)
+    return JsonResponse(response)
+
+def components_delete(request):
+    #TODO: return some response
+    response = dict()
+    if request.method == 'POST':
+        component_data = json.loads(request.body.decode('utf-8'))
+        component = get_object_or_404(Component, id=int(component_data['id']))
+        component.delete()
+        return JsonResponse(response)
+    return JsonResponse(response)
+
+def details_create(request):
+    response = dict()
+    if request.method == 'POST':
+        detail_data = json.loads(request.body.decode('utf-8'))
+        form = DetailForm(detail_data)
+        if form.is_valid():
+            detail = form.save()
+            response['detail'] = dict(list(Detail.objects.filter(id=detail.id).values())[0])
+            return JsonResponse(response)
+        else:
+            # TODO
+            print("suk it")
+    return JsonResponse(response)
+
+def details_update(request):
+    response = dict()
+    if request.method == 'POST':
+        detail_data = json.loads(request.body.decode('utf-8'))
+        detail = get_object_or_404(Detail, id=int(detail_data['id']))
+        form = DetailForm(detail_data, instance=detail)
+        if form.is_valid():
+            form.save()
+            response['detail'] = dict(list(Detail.objects.filter(id=detail.id).values())[0])
+            return JsonResponse(response)
+    return JsonResponse(response)
+
+def details_delete(request):
+    #TODO: return some response
+    response = dict()
+    if request.method == 'POST':
+        detail_data = json.loads(request.body.decode('utf-8'))
+        detail = get_object_or_404(Detail, id=int(detail_data['id']))
+        detail.delete()
+        return JsonResponse(response)
     return JsonResponse(response)
 
 def canvas_test_dungeon(request):
@@ -100,5 +136,7 @@ def canvas_test_dungeon(request):
     return render(request, 'generator/dungeontest.html', context)
 
 def canvas_test_sea(request):
-    context = {}
+    context = {
+        'categories':Component.CATEGORY_CHOICES
+    }
     return render(request, 'generator/seatest.html', context)

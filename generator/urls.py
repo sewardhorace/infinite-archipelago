@@ -6,11 +6,14 @@ app_name = 'generator'
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
-    url(r'^ajax/generate/$', views.generate, name='generate'),
-    url(r'^ajax/map_data/$', views.map_data, name='map_data'),
+    url(r'^api/generate/$', views.generate, name='generate'),
+    url(r'^api/game/$', views.game, name='game'),
+    url(r'^api/components/create/$', views.components_create, name='components_create'),
+    url(r'^api/components/update/$', views.components_update, name='components_update'),
+    url(r'^api/components/delete/$', views.components_delete, name='components_delete'),
+    url(r'^api/details/create/$', views.details_create, name='details_create'),
+    url(r'^api/details/update/$', views.details_update, name='details_update'),
+    url(r'^api/details/delete/$', views.details_delete, name='details_delete'),
     url(r'^canvastest/dungeon/$', views.canvas_test_dungeon, name='dungeontest'),
     url(r'^canvastest/sea/$', views.canvas_test_sea, name='seatest'),
-    
-
-    url(r'^about/$', views.ComponentCreate.as_view()) #example; not currently usable
 ]

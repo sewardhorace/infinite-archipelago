@@ -9,7 +9,7 @@
       var key = $("option:selected").val();
       var text = $("[name='" + key + "']").text();
       $.ajax({
-        url: 'ajax/generate/',
+        url: 'api/generate/',
         data: {
           'text': text
         },
