@@ -6,6 +6,9 @@ app_name = 'generator'
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
+    url(r'^oauth2callback/$', views.oauth2_callback, name='oauth2callback'),
+    url(r'^deletecreds/$', views.delete_creds, name='deletecreds'),
+    url(r'^sync/$', views.sync_sheet, name='syncsheet'),
     url(r'^api/generate/$', views.generate, name='generate'),
     url(r'^api/game/$', views.game, name='game'),
     url(r'^api/components/create/$', views.components_create, name='components_create'),

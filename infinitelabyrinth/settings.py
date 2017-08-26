@@ -79,10 +79,20 @@ WSGI_APPLICATION = 'infinitelabyrinth.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'infinite',
+        'USER': 'max',
+        'PASSWORD': 'max',
+        'HOST': 'localhost',
+        'PORT': '',
     }
 }
 
@@ -134,3 +144,8 @@ STATICFILES_DIRS = [
 # Simplified static file serving.
 # https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+#Google OAuth2 Client
+GOOGLE_OAUTH2_CLIENT_ID = '1009808248889-jb68jsfvb2ml8b8ebjf9mp8311qunf1c.apps.googleusercontent.com'
+GOOGLE_OAUTH2_CLIENT_SECRET = '7txINyvGVGkAyk_cwL6iuWKa'
+

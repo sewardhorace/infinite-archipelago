@@ -4,26 +4,34 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.postgres.fields import JSONField
 
-class Profile(models.Model):
-  user = models.OneToOneField(User, on_delete=models.CASCADE)
-  bio = models.TextField(max_length=500, blank=True)
-  location = models.CharField(max_length=30, blank=True)
-  birth_date = models.DateField(null=True, blank=True)
+from oauth2client.contrib.django_util.models import CredentialsField
 
-# https://simpleisbetterthancomplex.com/tutorial/2016/07/22/how-to-extend-django-user-model.html#onetoone
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-  if created:
-    Profile.objects.create(user=instance)
+class CredentialsModel(models.Model):
+  # id = models.ForeignKey(User, primary_key=True)
+  id = models.OneToOneField(User, primary_key=True)
+  credential = CredentialsField()
 
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-  instance.profile.save()
+# class Profile(models.Model):
+#   user = models.OneToOneField(User, on_delete=models.CASCADE)
+#   bio = models.TextField(max_length=500, blank=True)
+#   location = models.CharField(max_length=30, blank=True)
+#   birth_date = models.DateField(null=True, blank=True)
+
+# # https://simpleisbetterthancomplex.com/tutorial/2016/07/22/how-to-extend-django-user-model.html#onetoone
+# @receiver(post_save, sender=User)
+# def create_user_profile(sender, instance, created, **kwargs):
+#   if created:
+#     Profile.objects.create(user=instance)
+
+# @receiver(post_save, sender=User)
+# def save_user_profile(sender, instance, **kwargs):
+#   instance.profile.save()
 
 class Game(models.Model):
   name = models.CharField(max_length=50, default='', blank=True)
-  profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
-  # data = JSONField()
+  user = models.OneToOneField(User, on_delete=models.CASCADE)
+  scrambler_data = JSONField()
+  scrambler_endpoints = JSONField()
 
   def __str__(self):
     if len(self.name) > 0:
