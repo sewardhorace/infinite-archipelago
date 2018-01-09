@@ -1,10 +1,12 @@
-import json
+#TODO: 'require authenticated user' decorators
 
-from infinitelabyrinth import settings
+import json
 
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponseBadRequest
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
+
+from infinitelabyrinth import settings
 
 from .models import Game, Component, Detail, CredentialsModel
 from .forms import GameForm, ComponentForm, DetailForm
@@ -13,127 +15,73 @@ from core.namer import Namer
 from core.scrambler import Scrambler
 from core.helpers import process_sheet_data
 
-
-
-#will remove the below file access stuff when the data is stored in the db
-import os, json
-from infinitelabyrinth.settings import BASE_DIR
-
-# input_data = {}
-# with open(os.path.join(BASE_DIR, 'core/input_data/data.json')) as json_data:
-#     input_data = json.load(json_data)
-# scrambler = Scrambler(input_data)
-
-# input_data = {}
-# with open(os.path.join(BASE_DIR, 'core/corpora/data.json')) as json_data:
-#    input_data = json.load(json_data)
-# namer = Namer(input_data)
-
-# endpoints = {}
-# with open(os.path.join(BASE_DIR, 'core/input_data/endpoints.json')) as json_data:
-#     endpoints = json.load(json_data)
-
-#OAuth2 stuff
+#Google OAuth2
 from oauth2client.client import OAuth2WebServerFlow
 from oauth2client.contrib.django_util.storage import DjangoORMStorage
 from oauth2client.contrib import xsrfutil
 import httplib2
 from googleapiclient import discovery
 
-#TODO: secret keys
-flow = OAuth2WebServerFlow(client_id='1009808248889-jb68jsfvb2ml8b8ebjf9mp8311qunf1c.apps.googleusercontent.com',
-                           client_secret='7txINyvGVGkAyk_cwL6iuWKa',
+#TODO: secure secret keys
+flow = OAuth2WebServerFlow(client_id=settings.GOOGLE_OAUTH2_CLIENT_ID,
+                           client_secret=settings.GOOGLE_OAUTH2_CLIENT_SECRET,
                            scope='https://www.googleapis.com/auth/spreadsheets.readonly',
                            redirect_uri='http://localhost:8000/oauth2callback')
 
-def delete_creds(request):
-    storage = DjangoORMStorage(CredentialsModel, 'id', request.user, 'credential')
-    storage.delete()
-    print('CREDS DELETED')
-    return HttpResponseRedirect("/")
-
-
-def oauth2_callback(request):
-    print('OAUTH2 CALLBACK')
-    state = request.GET.dict()['state'].encode('UTF-8')
-    if not xsrfutil.validate_token(settings.SECRET_KEY, state, request.user):
-        return  HttpResponseBadRequest()
-    credentials = flow.step2_exchange(request.GET.dict()['code'])
-    storage = DjangoORMStorage(CredentialsModel, 'id', request.user, 'credential')
-    storage.put(credentials)
-    return HttpResponseRedirect("/")
+default_game = Game.objects.get(id=3)
+# default_game = None
 
 def index(request):
     if request.user.is_authenticated:
         print("user %s is authenticated" % (request.user.username))
+        return user_page(request)
     else:
         print("user is not authenticated")
-        username = 'seawardhorses'
-        password = 'kelso&abner'
+        return welcome(request)
+
+def user_page(request):
+    #TODO: should return last edited game
+    game = Game.objects.filter(user_id=request.user.id).first()
+    if not game:
+        game = Game.objects.create(user_id=request.user.id, scrambler_endpoints="{}", scrambler_data="{}")
+    context = {
+        'endpoints': json.loads(game.scrambler_endpoints),
+        'game_id': game.id,
+        'categories':Component.CATEGORY_CHOICES,
+    }
+    return render(request, 'generator/index.html', context)
+
+def welcome(request):
+    game = default_game
+    context = {
+        'endpoints': json.loads(game.scrambler_endpoints),
+        'game_id': game.id,
+        'categories':Component.CATEGORY_CHOICES,
+    }
+    return render(request, 'generator/welcome.html', context)
+
+def login_view(request):
+    if request.method == "POST":
+        username = request.POST.get('username')
+        password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            print('logged in %s' % (user.username))
-        else:
-            print('unable to authenticate user')
-
-    game = Game.objects.filter(user_id=request.user.id).first()
-    endpoints = None
-    if game:
-        endpoints = json.loads(game.scrambler_endpoints)
-    context = {
-        'endpoints': endpoints
-    }
-    print(context)
-    return render(request, 'generator/index.html', context)
-
-def sync_sheet(request):
-    if request.user.is_authenticated:
-        print("user %s is authenticated" % (request.user.username))
-        result = None
-        storage = DjangoORMStorage(CredentialsModel, 'id', request.user, 'credential')
-        credentials = storage.get()
-        if credentials is None or credentials.invalid == True:
-            flow.params['state'] = xsrfutil.generate_token(settings.SECRET_KEY, request.user)
-            auth_uri = flow.step1_get_authorize_url()
-            return HttpResponseRedirect(auth_uri)
-        else:
-            print('credentials are solid, dude')
-            http = httplib2.Http()
-            http = credentials.authorize(http)
-            discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
-                            'version=v4')
-            service = discovery.build('sheets', 'v4', http=http,
-                                      discoveryServiceUrl=discoveryUrl)
-            #TODO: will have to parse the spreadsheet ID from url submitted by user?
-            spreadsheetId = '1m1spaKGgfcQ1PSRQ6tZTSHL1lighQyQFVSKT-VyyM6A'
-            #return a spreadsheet collection
-            result = service.spreadsheets().get(spreadsheetId=spreadsheetId, includeGridData=True).execute()
-            data = process_sheet_data(result)
-            game = get_object_or_404(Game, id=1)
-            game.scrambler_endpoints = json.dumps(data.pop('endpoints', None))
-            game.scrambler_data = json.dumps(data)
-            game.save()
-            print('SYNC SUCCESSFUL')
             return HttpResponseRedirect("/")
+        else:
+            # TODO: Return an 'invalid login' error message.
+            return HttpResponseBadRequest()
     else:
         return HttpResponseBadRequest()
 
-def generate(request):
-    format_text = request.GET.get('text')
-    text = None
-    game = Game.objects.filter(user_id=request.user.id).first()
-    if game:
-        data = json.loads(game.scrambler_data)
-        text = Scrambler(data['tables']).scramble(format_text)
-        text = Namer(data['corpora']).generate(text)
-    data = {
-        'detail':text
-    }
-    return JsonResponse(data)
+def logout_view(request):
+    logout(request)
+    return HttpResponseRedirect("/")
 
-def game(request):
-    game = list(Game.objects.filter(id=1).values())[0]
+def game_load(request, game_id):
+    game = Game.objects.filter(id=game_id).values()[0]
+    game.pop("scrambler_endpoints")
+    game.pop("scrambler_data")
     components = list(Component.objects.filter(game=game["id"]).values())
     game["components"] = components
     for component in game["components"]:
@@ -149,7 +97,7 @@ def components_create(request):
         form = ComponentForm(component_data)
         if form.is_valid():
             component = form.save()
-            response['component'] = dict(list(Component.objects.filter(id=component.id).values())[0])
+            response['component'] = dict(Component.objects.filter(id=component.id).values()[0])
             return JsonResponse(response)
         else:
             # TODO
@@ -164,7 +112,7 @@ def components_update(request):
         form = ComponentForm(component_data, instance=component)
         if form.is_valid():
             form.save()
-            response['component'] = dict(list(Component.objects.filter(id=component.id).values())[0])
+            response['component'] = dict(Component.objects.filter(id=component.id).values()[0])
             return JsonResponse(response)
     return JsonResponse(response)
 
@@ -185,7 +133,7 @@ def details_create(request):
         form = DetailForm(detail_data)
         if form.is_valid():
             detail = form.save()
-            response['detail'] = dict(list(Detail.objects.filter(id=detail.id).values())[0])
+            response['detail'] = dict(Detail.objects.filter(id=detail.id).values()[0])
             return JsonResponse(response)
         else:
             # TODO
@@ -200,12 +148,11 @@ def details_update(request):
         form = DetailForm(detail_data, instance=detail)
         if form.is_valid():
             form.save()
-            response['detail'] = dict(list(Detail.objects.filter(id=detail.id).values())[0])
+            response['detail'] = dict(Detail.objects.filter(id=detail.id).values()[0])
             return JsonResponse(response)
     return JsonResponse(response)
 
 def details_delete(request):
-    #TODO: return some response
     response = dict()
     if request.method == 'POST':
         detail_data = json.loads(request.body.decode('utf-8'))
@@ -214,12 +161,75 @@ def details_delete(request):
         return JsonResponse(response)
     return JsonResponse(response)
 
-def canvas_test_dungeon(request):
-    context = {}
-    return render(request, 'generator/dungeontest.html', context)
+def generate(request):
+    if request.method == 'POST':
+        data = json.loads(request.body.decode('utf-8'))
+        format_text = data.get('text', '')
+        game_id = data.get('game_id')
+        text = None
+        game = Game.objects.filter(user_id=request.user.id).first()
+        if game:
+            data = json.loads(game.scrambler_data)
+            text = Scrambler(data['tables']).scramble(format_text)
+            text = Namer(data['corpora']).generate(text)
+        else:
+            game = Game.objects.filter(id=1).first()
+            data = json.loads(game.scrambler_data)
+            text = Scrambler(data['tables']).scramble(format_text)
+            text = Namer(data['corpora']).generate(text)
+        data = {
+            'detail':text
+        }
+        return JsonResponse(data)
+    else:
+        message = "Something went wrong"
+        return JsonResponse({'status':'false','message':message}, status=500)
 
-def canvas_test_sea(request):
-    context = {
-        'categories':Component.CATEGORY_CHOICES
-    }
-    return render(request, 'generator/seatest.html', context)
+def sync_sheet(request):
+    # TODO: loading spinner on the frontend while processing
+    if request.user.is_authenticated:
+        print("user %s is authenticated" % (request.user.username))
+        result = None
+        storage = DjangoORMStorage(CredentialsModel, 'id', request.user, 'credential')
+        credentials = storage.get()
+        if credentials is None or credentials.invalid == True:
+            print('verifying credentials...')
+            flow.params['state'] = xsrfutil.generate_token(settings.SECRET_KEY, request.user)
+            auth_uri = flow.step1_get_authorize_url()
+            return HttpResponseRedirect(auth_uri)
+        else:
+            print('credentials are solid, dude')
+            http = httplib2.Http()
+            http = credentials.authorize(http)
+            discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
+                            'version=v4')
+            service = discovery.build('sheets', 'v4', http=http,
+                                      discoveryServiceUrl=discoveryUrl)
+            #TODO: will have to parse the spreadsheet ID from url submitted by user?
+            spreadsheetId = '1m1spaKGgfcQ1PSRQ6tZTSHL1lighQyQFVSKT-VyyM6A'
+            #return a spreadsheet collection
+            result = service.spreadsheets().get(spreadsheetId=spreadsheetId, includeGridData=True).execute()
+            data = process_sheet_data(result)
+            game = get_object_or_404(Game, id=default_game.id)
+            game.scrambler_endpoints = json.dumps(data.pop('endpoints', None))
+            game.scrambler_data = json.dumps(data)
+            game.save()
+            print('Successfully synced sheet with game %d' % (game.id))
+            print(game.name)
+            return HttpResponseRedirect("/")
+    else:
+        return HttpResponseBadRequest()
+
+def oauth2_callback(request):
+    state = request.GET.dict()['state'].encode('UTF-8')
+    if not xsrfutil.validate_token(settings.SECRET_KEY, state, request.user):
+        return  HttpResponseBadRequest()
+    credentials = flow.step2_exchange(request.GET.dict()['code'])
+    storage = DjangoORMStorage(CredentialsModel, 'id', request.user, 'credential')
+    storage.put(credentials)
+    return HttpResponseRedirect("/")
+
+def delete_creds(request):
+    storage = DjangoORMStorage(CredentialsModel, 'id', request.user, 'credential')
+    storage.delete()
+    return HttpResponseRedirect("/")

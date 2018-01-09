@@ -33,20 +33,21 @@ $("form#generator").submit(function (e) {
   });
 });
 
-// $("form#sync").submit(function (e) {
-//   e.preventDefault();
-//   console.log($("#inputSheetURL").val());
-//   var sheetURL = $("#inputSheetURL").val();
-//   var gameID = 69;
-//   var data = {
-//     sheetURL: sheetURL,
-//     gameID: gameID
-//   };
-//   requests.syncSheet(data, function (data) {
-//     console.log("done");
-//     console.log(data);
-//   });
-// });
+$("form#sync").submit(function (e) {
+  e.preventDefault();
+  // console.log("blsh");
+  // var key = $("#generator option:selected").val();
+  // var text = $("#generator [name='" + key + "']").text();
+  // var gameID = 69;
+  // var data = {
+  //   text: text,
+  //   gameID: gameID
+  // };
+  // requests.generate(data, function (data) {
+  //   console.log("done");
+  //   console.log(data);
+  // });
+});
 </script>
 {% endblock %}
 
@@ -55,14 +56,23 @@ $("form#generator").submit(function (e) {
 <div class="container">
   <div class="row">
   	<div class="col-md-12 text-center">
-  		<h1>[project-name]</h1>
+  		<h1>Infinite Archipelago</h1>
+  		<div>- Generate Infinite Content -</div>
+      <div>
+        <p>Here's a guide and stuff.  You can do this and that and blah blah blah.</p>
+        It's neat. You can create random tables in a Google Sheet and link it here, and 
+        your endpoints will be available for instant generation. Nested random tables, without 
+        any rolling. Also, map your games out. Drag important details between locations. You're the boss! Try it out below.
+      </div>
+      <div>
+        Sign up to save your content:
+
+      </div>
   	</div>
 
     <div class="col-md-12">
-
       <canvas id="canvas" width="500" height="500" style="border:1px solid #000000;">
       </canvas>
-
       <form id="component-form">
         <button id="component-delete">x</button>
         <input id="component-name" type="text" placeholder="(not named)"></input>
@@ -76,7 +86,6 @@ $("form#generator").submit(function (e) {
         </div>
         <button id="detail-new">New</button>
       </form>
-
     </div>
 
     <div class="col-md-4"></div>
@@ -107,7 +116,7 @@ $("form#generator").submit(function (e) {
         <textarea class="form-control" rows="10" id="content"></textarea>
       </div>
 
-      <form class="form" role="form" id="sync" class="text-center" method="post" action="/api/sync/">
+      <form class="form" role="form" id="sync" class="text-center" method="post">
         {% csrf_token %}
         <div class="form-group">
           <label for="inputSheetURL">Google Sheet URL</label>
@@ -123,7 +132,7 @@ $("form#generator").submit(function (e) {
     <div class="col-md-4"></div>
 
     <div class="col-md-12 text-center">
-      <img src="{% static "generator/img/ruins.png" %}" alt="Ruins"/>
+      <img src="{% static "generator/img/ruins.png" %}" alt="My image"/>
     </div>
 
   </div> <!-- row -->

@@ -6,17 +6,21 @@ app_name = 'generator'
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
-    url(r'^oauth2callback/$', views.oauth2_callback, name='oauth2callback'),
-    url(r'^deletecreds/$', views.delete_creds, name='deletecreds'),
-    url(r'^sync/$', views.sync_sheet, name='syncsheet'),
-    url(r'^api/generate/$', views.generate, name='generate'),
-    url(r'^api/game/$', views.game, name='game'),
+    # url(r'^(?P<game_id>[0-9]+)/$', views.index, name='index'),
+
+    url(r'^login/$', views.login_view, name='login'),
+    url(r'^logout/$', views.logout_view, name='logout'),
+
+    url(r'^api/game/(?P<game_id>[0-9]+)/$', views.game_load, name='game'),
     url(r'^api/components/create/$', views.components_create, name='components_create'),
     url(r'^api/components/update/$', views.components_update, name='components_update'),
     url(r'^api/components/delete/$', views.components_delete, name='components_delete'),
     url(r'^api/details/create/$', views.details_create, name='details_create'),
     url(r'^api/details/update/$', views.details_update, name='details_update'),
     url(r'^api/details/delete/$', views.details_delete, name='details_delete'),
-    url(r'^canvastest/dungeon/$', views.canvas_test_dungeon, name='dungeontest'),
-    url(r'^canvastest/sea/$', views.canvas_test_sea, name='seatest'),
+
+    url(r'^api/generate/$', views.generate, name='generate'),
+    url(r'^api/sync/$', views.sync_sheet, name='syncsheet'),
+    url(r'^oauth2callback/$', views.oauth2_callback, name='oauth2callback'),
+    url(r'^deletecreds/$', views.delete_creds, name='deletecreds'),
 ]
