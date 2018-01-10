@@ -15,20 +15,6 @@ $(function() {
   helpers.setEventHandlers();
 });
 
-$("form#generator").submit(function (e) {
-	e.preventDefault();
-  var key = $("#generator option:selected").val();
-  var text = $("#generator [name='" + key + "']").text();
-  var gameID = 69;
-  var data = {
-    text: text,
-    gameID: gameID
-  };
-  requests.generate(data, function (data) {
-    $("#content").html(data.detail);
-  });
-});
-
 //broken: ajax request will not allow redirect to oauth page
 // $("form#sync").submit(function (e) {
 //   e.preventDefault();
@@ -81,7 +67,7 @@ $("form#generator").submit(function (e) {
     <div class="col-md-4">
       <div class="text-center"><a href="/deletecreds">Delete Credentials</a></div>
 
-      <form class="form" role="form" id="generator" class="text-center" method="post">
+      <form class="form" role="form" id="scrambler" class="text-center" method="post">
       {% csrf_token %}
         <div class="form-group">
           <label for="endpoint-select">Select Content to Generate:</label>
@@ -97,7 +83,7 @@ $("form#generator").submit(function (e) {
         </div>
       </form>
       <div class="form-group">
-        <textarea class="form-control" rows="10" id="content"></textarea>
+        <textarea class="form-control" rows="10" id="scrambler-content"></textarea>
       </div>
 
       <form class="form" role="form" id="sync" class="text-center" method="post" action="/api/sync/">

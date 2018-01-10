@@ -117,7 +117,7 @@ def components_update(request):
     return JsonResponse(response)
 
 def components_delete(request):
-    #TODO: return some response
+    #TODO: return some responseS
     response = dict()
     if request.method == 'POST':
         component_data = json.loads(request.body.decode('utf-8'))
@@ -162,6 +162,7 @@ def details_delete(request):
     return JsonResponse(response)
 
 def generate(request):
+    # TODO: cleanup
     if request.method == 'POST':
         data = json.loads(request.body.decode('utf-8'))
         format_text = data.get('text', '')
