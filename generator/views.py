@@ -45,7 +45,6 @@ def user_page(request):
     if not game:
         game = Game.objects.create(user_id=request.user.id, scrambler_endpoints="{}", scrambler_data="{}")
     context = {
-        'endpoints': json.loads(game.scrambler_endpoints),
         'game_id': game.id,
         'categories':Component.CATEGORY_CHOICES,
     }
@@ -80,8 +79,9 @@ def logout_view(request):
 
 def game_load(request, game_id):
     game = Game.objects.filter(id=game_id).values()[0]
-    game.pop("scrambler_endpoints")
     game.pop("scrambler_data")
+    endpoints = dict(json.loads(game.pop("scrambler_endpoints")))
+    game["endpoints"] = endpoints
     components = list(Component.objects.filter(game=game["id"]).values())
     game["components"] = components
     for component in game["components"]:

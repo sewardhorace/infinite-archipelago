@@ -22,9 +22,9 @@
         <a class="dropdown-toggle" data-toggle="dropdown" href="#">
           Games <span class="caret"></span>
         </a>
-        <ul class="dropdown-menu">
+        <ul id="games-dropdown" class="dropdown-menu">
           {% for game in user.game_set.all %}
-          <li><a href="/?game_id={{ game.id }}">{{ game.name }}</a></li>
+          <li><a data-id="{{ game.id }}" href="#">{{ game.name }}</a></li>
           {% endfor %}
           <li class="divider"></li>
           <li><a href="#">Start New Game</a></li>

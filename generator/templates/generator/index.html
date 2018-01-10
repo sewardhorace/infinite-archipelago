@@ -5,18 +5,14 @@
 
 <script>
 $(function() {
+  //TODO: use of ajaxSetup() is not recommended
   $.ajaxSetup({
-    headers: { "X-CSRFToken": getCookie("csrftoken") }
+    headers: { "X-CSRFToken": helpers.getCookie("csrftoken") }
   });
   requests.loadGame({{ game_id }}, function (data) {
-    var components = data.game.components.map(function(c) {
-      return new Component(c);
-    });
-    seaMapper.components = components;
-    seaMapper.gameID = data.game.id;
-    seaMapper.start();
-    console.log("loaded game " + seaMapper.gameID);
+    game.load(data);
   });
+  helpers.setEventHandlers();
 });
 
 $("form#generator").submit(function (e) {
@@ -33,6 +29,7 @@ $("form#generator").submit(function (e) {
   });
 });
 
+//broken: ajax request will not allow redirect to oauth page
 // $("form#sync").submit(function (e) {
 //   e.preventDefault();
 //   console.log($("#inputSheetURL").val());
@@ -55,7 +52,7 @@ $("form#generator").submit(function (e) {
 <div class="container">
   <div class="row">
   	<div class="col-md-12 text-center">
-  		<h1>[project-name]</h1>
+  		<h1 id="name-input">[project-name]</h1>
   	</div>
 
     <div class="col-md-12">
@@ -87,20 +84,16 @@ $("form#generator").submit(function (e) {
       <form class="form" role="form" id="generator" class="text-center" method="post">
       {% csrf_token %}
         <div class="form-group">
-          <label for="endpoints">Select Content to Generate:</label>
-          <select class="form-control" id="endpoints">
-            {% for key, val in endpoints.items %}
-            <option>{{key}}</option>
-            {% endfor %}
+          <label for="endpoint-select">Select Content to Generate:</label>
+          <select class="form-control" id="endpoint-select">
+            <!-- populated by javascript -->
           </select>
         </div>
         <div class="form-group">
           <button type="submit" class="btn btn-primary btn-block">Submit</button>
         </div>
-        <div hidden="true">
-          {% for key, val in endpoints.items %}
-          <div name="{{key}}">{{val}}</div>
-          {% endfor %}
+        <div id="endpoint-data" hidden="true">
+          <!-- populated by javascript -->
         </div>
       </form>
       <div class="form-group">
@@ -132,4 +125,5 @@ $("form#generator").submit(function (e) {
 <script src="{% static "generator/js/helpers.js" %}"></script>
 <script src="{% static "generator/js/requests.js" %}"></script>
 <script src="{% static "generator/js/mapper.js" %}"></script>
+<script src="{% static "generator/js/game.js" %}"></script>
 {% endblock %}
