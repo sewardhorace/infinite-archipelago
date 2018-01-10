@@ -1,3 +1,4 @@
+import re
 
 def process_sheet_data(sheet_data):
 	print("PROCESSING SHEET DATA")
@@ -34,3 +35,11 @@ def process_sheet_data(sheet_data):
 		values = list(filter(None, data['endpoints'][key]))
 		data['endpoints'][key] = "\n".join(values)
 	return data
+
+def parse_sheet_url(url):
+	exp = re.compile('/spreadsheets/d/([a-zA-Z0-9-_]+)')
+	m = exp.search(url).group()
+	if m:
+		return m[16:]
+	else:
+		return None

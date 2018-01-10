@@ -13,7 +13,7 @@ from .forms import GameForm, ComponentForm, DetailForm
 
 from core.namer import Namer
 from core.scrambler import Scrambler
-from core.helpers import process_sheet_data
+from core.helpers import process_sheet_data, parse_sheet_url
 
 #Google OAuth2
 from oauth2client.client import OAuth2WebServerFlow
@@ -188,7 +188,10 @@ def generate(request):
 
 def sync_sheet(request):
     # TODO: loading spinner on the frontend while processing
-    if request.user.is_authenticated:
+    # TODO: ensure game id is provided; if no URL provided, fall back to last URL used
+    if request.user.is_authenticated and request.method == 'POST':
+        sheet_url = request.POST.get("sheet-url")
+        game_id = request.POST.get("game-id")
         print("user %s is authenticated" % (request.user.username))
         result = None
         storage = DjangoORMStorage(CredentialsModel, 'id', request.user, 'credential')
@@ -200,23 +203,33 @@ def sync_sheet(request):
             return HttpResponseRedirect(auth_uri)
         else:
             print('credentials are solid, dude')
+            game = get_object_or_404(Game, id=game_id)
+
+            # google sheets API
             http = httplib2.Http()
             http = credentials.authorize(http)
             discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
                             'version=v4')
             service = discovery.build('sheets', 'v4', http=http,
                                       discoveryServiceUrl=discoveryUrl)
-            #TODO: will have to parse the spreadsheet ID from url submitted by user?
-            spreadsheetId = '1m1spaKGgfcQ1PSRQ6tZTSHL1lighQyQFVSKT-VyyM6A'
-            #return a spreadsheet collection
+            spreadsheetId = None
+            #TODO: cleaner error handling/fallback
+            if sheet_url:
+                spreadsheetId = parse_sheet_url(sheet_url)
+            elif game.sheet_url:
+                # TODO: define model helper to return sheet ID
+                spreadsheetId = parse_sheet_url(game.sheet_url)
+            else:
+                return HttpResponseBadRequest()
+            # return a spreadsheet collection
             result = service.spreadsheets().get(spreadsheetId=spreadsheetId, includeGridData=True).execute()
+            
             data = process_sheet_data(result)
-            game = get_object_or_404(Game, id=default_game.id)
             game.scrambler_endpoints = json.dumps(data.pop('endpoints', None))
             game.scrambler_data = json.dumps(data)
+            # game.sheet_url = sheet_url
             game.save()
-            print('Successfully synced sheet with game %d' % (game.id))
-            print(game.name)
+            print('Successfully synced sheet ID %s with game %d, %s' % (spreadsheetId, game.id, game.name))
             return HttpResponseRedirect("/")
     else:
         return HttpResponseBadRequest()
