@@ -1,13 +1,3 @@
-"""
-Django settings for infinitelabyrinth project on Heroku. For more info, see:
-https://github.com/heroku/heroku-django-template
-
-For more information on this file, see
-https://docs.djangoproject.com/en/1.10/topics/settings/
-
-For the full list of settings and their values, see
-https://docs.djangoproject.com/en/1.10/ref/settings/
-"""
 
 import os
 import dj_database_url
@@ -21,8 +11,8 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "i$!+nxi+%49vngsvru)vp-m65^1w%$_ki793wqj#*09rc_4z17"
-# SECRET_KEY = os.environ['SECRET_KEY']
+# SECRET_KEY = "i$!+nxi+%49vngsvru)vp-m65^1w%$_ki793wqj#*09rc_4z17"
+SECRET_KEY = os.environ.get('SECRET_KEY', '')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -36,9 +26,6 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    # Disable Django's own staticfiles handling in favour of WhiteNoise, for
-    # greater consistency between gunicorn and `./manage.py runserver`. See:
-    # http://whitenoise.evans.io/en/stable/django.html#using-whitenoise-in-development
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
 ]
@@ -85,14 +72,15 @@ WSGI_APPLICATION = 'infinitelabyrinth.wsgi.application'
 #         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #     }
 # }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'infinite',
-        'USER': 'max',
-        'PASSWORD': 'max',
-        'HOST': 'localhost',
-        'PORT': '',
+        'NAME': os.environ.get('DB_NAME', ''),
+        'USER': os.environ.get('DB_USER', ''),
+        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+        'HOST': os.environ.get('DB_HOST', ''),
+        'PORT': os.environ.get('DB_PORT', ''),
     }
 }
 
@@ -136,16 +124,13 @@ ALLOWED_HOSTS = ['*']
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')
 STATIC_URL = '/static/'
 
-# Extra places for collectstatic to find static files.
-# STATICFILES_DIRS = [
-#     os.path.join(PROJECT_ROOT, 'static'),
-# ]
-
 # Simplified static file serving.
 # https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 #Google OAuth2 Client
-GOOGLE_OAUTH2_CLIENT_ID = '1009808248889-jb68jsfvb2ml8b8ebjf9mp8311qunf1c.apps.googleusercontent.com'
-GOOGLE_OAUTH2_CLIENT_SECRET = '7txINyvGVGkAyk_cwL6iuWKa'
+GOOGLE_OAUTH2_CLIENT_ID = os.environ.get('GOOGLE_OAUTH2_CLIENT_ID', '')
+GOOGLE_OAUTH2_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH2_CLIENT_SECRET', '')
+# GOOGLE_OAUTH2_CLIENT_ID = '1009808248889-jb68jsfvb2ml8b8ebjf9mp8311qunf1c.apps.googleusercontent.com'
+# GOOGLE_OAUTH2_CLIENT_SECRET = '7txINyvGVGkAyk_cwL6iuWKa'
 
