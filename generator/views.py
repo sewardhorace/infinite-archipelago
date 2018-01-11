@@ -5,6 +5,7 @@ import json
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponseBadRequest
 from django.contrib.auth import authenticate, login, logout
+# from django.contrib.sites.models import Site
 
 from infinitelabyrinth import settings
 
@@ -22,11 +23,17 @@ from oauth2client.contrib import xsrfutil
 import httplib2
 from googleapiclient import discovery
 
-#TODO: secure secret keys
+# flow = OAuth2WebServerFlow(client_id=settings.GOOGLE_OAUTH2_CLIENT_ID,
+#                            client_secret=settings.GOOGLE_OAUTH2_CLIENT_SECRET,
+#                            scope='https://www.googleapis.com/auth/spreadsheets.readonly',
+#                            redirect_uri='http://localhost:8000/oauth2callback')
+
+# redirect_uri = 'https://%s%s' % (Site.objects.get_current().domain, '/oauth2callback')
+redirect_uri = 'https://pacific-mountain-63896.herokuapp.com/oauth2callback'
 flow = OAuth2WebServerFlow(client_id=settings.GOOGLE_OAUTH2_CLIENT_ID,
                            client_secret=settings.GOOGLE_OAUTH2_CLIENT_SECRET,
                            scope='https://www.googleapis.com/auth/spreadsheets.readonly',
-                           redirect_uri='http://localhost:8000/oauth2callback')
+                           redirect_uri=redirect_uri)
 
 default_game_id = 3
 

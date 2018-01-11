@@ -12,7 +12,7 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # SECRET_KEY = "i$!+nxi+%49vngsvruvp-m65^1w%$_ki793wqj#*09rc_4z17"
-SECRET_KEY = os.environ.get('SECRET_KEY', '')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'i$!+nxi+%49vngsvruvp-m65^1w%$_ki793wqj#*09rc_4z17')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -28,7 +28,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
+    'django.contrib.sites' #need in order to access domain
 ]
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -76,10 +79,10 @@ WSGI_APPLICATION = 'infinitelabyrinth.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', ''),
-        'USER': os.environ.get('DB_USER', ''),
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-        'HOST': os.environ.get('DB_HOST', ''),
+        'NAME': os.environ.get('DB_NAME', 'infinite'),
+        'USER': os.environ.get('DB_USER', 'max'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'max'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': os.environ.get('DB_PORT', ''),
     }
 }
@@ -129,8 +132,8 @@ STATIC_URL = '/static/'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 #Google OAuth2 Client
-GOOGLE_OAUTH2_CLIENT_ID = os.environ.get('GOOGLE_OAUTH2_CLIENT_ID', '')
-GOOGLE_OAUTH2_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH2_CLIENT_SECRET', '')
+GOOGLE_OAUTH2_CLIENT_ID = os.environ.get('GOOGLE_OAUTH2_CLIENT_ID', '1009808248889-jb68jsfvb2ml8b8ebjf9mp8311qunf1c.apps.googleusercontent.com')
+GOOGLE_OAUTH2_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH2_CLIENT_SECRET', '7txINyvGVGkAyk_cwL6iuWKa')
 # GOOGLE_OAUTH2_CLIENT_ID = '1009808248889-jb68jsfvb2ml8b8ebjf9mp8311qunf1c.apps.googleusercontent.com'
 # GOOGLE_OAUTH2_CLIENT_SECRET = '7txINyvGVGkAyk_cwL6iuWKa'
 
