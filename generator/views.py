@@ -50,7 +50,8 @@ def user_page(request):
     return render(request, 'generator/index.html', context)
 
 def welcome(request):
-    game = Game.objects.get(id=default_game_id)
+    # game = Game.objects.get(id=default_game_id)
+    game = Game.objects.all().first()
     context = {
         'endpoints': json.loads(game.scrambler_endpoints),
         'game_id': game.id,
