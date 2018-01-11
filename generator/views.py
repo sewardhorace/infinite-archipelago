@@ -28,8 +28,7 @@ flow = OAuth2WebServerFlow(client_id=settings.GOOGLE_OAUTH2_CLIENT_ID,
                            scope='https://www.googleapis.com/auth/spreadsheets.readonly',
                            redirect_uri='http://localhost:8000/oauth2callback')
 
-default_game = Game.objects.get(id=3)
-# default_game = None
+default_game_id = 3
 
 def index(request):
     if request.user.is_authenticated:
@@ -51,7 +50,7 @@ def user_page(request):
     return render(request, 'generator/index.html', context)
 
 def welcome(request):
-    game = default_game
+    game = Game.objects.get(id=default_game_id)
     context = {
         'endpoints': json.loads(game.scrambler_endpoints),
         'game_id': game.id,
@@ -217,8 +216,7 @@ def sync_sheet(request):
             if sheet_url:
                 spreadsheetId = parse_sheet_url(sheet_url)
             elif game.sheet_url:
-                # TODO: define model helper to return sheet ID
-                spreadsheetId = parse_sheet_url(game.sheet_url)
+                spreadsheetId = game.sheet_id
             else:
                 return HttpResponseBadRequest()
             # return a spreadsheet collection
@@ -227,7 +225,7 @@ def sync_sheet(request):
             data = process_sheet_data(result)
             game.scrambler_endpoints = json.dumps(data.pop('endpoints', None))
             game.scrambler_data = json.dumps(data)
-            # game.sheet_url = sheet_url
+            game.sheet_url = sheet_url
             game.save()
             print('Successfully synced sheet ID %s with game %d, %s' % (spreadsheetId, game.id, game.name))
             return HttpResponseRedirect("/")

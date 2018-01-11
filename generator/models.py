@@ -4,17 +4,18 @@ from django.contrib.postgres.fields import JSONField
 
 from oauth2client.contrib.django_util.models import CredentialsField
 
+from core.helpers import parse_sheet_url
+
 class CredentialsModel(models.Model):
-  # id = models.ForeignKey(User, primary_key=True)
   id = models.OneToOneField(User, primary_key=True)
   credential = CredentialsField()
 
 class Game(models.Model):
   name = models.CharField(max_length=50, default='', blank=True)
   user = models.ForeignKey(User, on_delete=models.CASCADE)
-  # sheet_url = models.URLField()
   scrambler_data = JSONField()
   scrambler_endpoints = JSONField()
+  sheet_url = models.URLField(null=True)
   # map_pan
   # map_zoom
 
@@ -23,6 +24,12 @@ class Game(models.Model):
       return '%s' % (self.name)
     else:
       return 'Game ID %s' % (self.pk)
+
+  def sheet_id(self):
+    if self.sheet_url:
+      return parse_sheet_url(self.sheet_url)
+    else:
+      return None
 
 class Component(models.Model):
   name = models.CharField(max_length=50, default='', blank=True)
