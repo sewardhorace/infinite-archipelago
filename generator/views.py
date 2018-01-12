@@ -210,7 +210,7 @@ def sync_sheet(request):
         if credentials is None or credentials.invalid == True:
             print('verifying credentials...')
             flow.params['state'] = xsrfutil.generate_token(settings.SECRET_KEY, request.user)
-            flow.redirect_uri = '%s://%s/%s' % (request.scheme, request.META['HTTP_HOST'],'oauth2callback')
+            flow.redirect_uri = '%s%s' % (request.META['HTTP_REFERER'],'oauth2callback')
             auth_uri = flow.step1_get_authorize_url()
             return HttpResponseRedirect(auth_uri)
         else:
