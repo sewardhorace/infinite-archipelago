@@ -249,6 +249,7 @@ def oauth2_callback(request):
     state = request.GET.dict()['state'].encode('UTF-8')
     if not xsrfutil.validate_token(settings.SECRET_KEY, state, request.user):
         return  HttpResponseBadRequest()
+    flow.redirect_uri = '%s%s' % (request.META['HTTP_REFERER'],'oauth2callback')
     credentials = flow.step2_exchange(request.GET.dict()['code'])
     storage = DjangoORMStorage(CredentialsModel, 'id', request.user, 'credential')
     storage.put(credentials)
