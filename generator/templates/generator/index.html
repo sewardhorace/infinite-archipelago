@@ -100,7 +100,14 @@ $(function() {
 
     </div>
 
-    <div class="col-md-4"></div>
+    <div class="col-md-4">
+      <form class="form" role="form" id="sync" class="text-center" method="post" action="/deletecreds/">
+        {% csrf_token %}
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary btn-block">Delete Credentials</button>
+        </div>
+      </form>
+    </div>
 
     <div class="col-md-12 text-center">
       <img src="{% static "generator/img/ruins.png" %}" alt="Ruins"/>
