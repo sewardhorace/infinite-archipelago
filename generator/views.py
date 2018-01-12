@@ -5,6 +5,7 @@ import json
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponseBadRequest
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 
 from infinitelabyrinth import settings
 
@@ -55,6 +56,19 @@ def welcome(request):
         'categories':Component.CATEGORY_CHOICES,
     }
     return render(request, 'generator/welcome.html', context)
+
+def signup_view(request):
+    #TODO: validate password, username length
+    if request.method == "POST":
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = User.objects.create_user(username, password=password)
+        user.save()
+        print('Successfully created user %s' % user.username)
+        login(request, user)
+        return HttpResponseRedirect("/")
+    else:
+        return HttpResponseBadRequest()
 
 def login_view(request):
     if request.method == "POST":
@@ -165,7 +179,7 @@ def generate(request):
         format_text = data.get('text', '')
         game_id = data.get('game_id')
         text = None
-        game = Game.objects.filter(user_id=request.user.id).first()
+        game = Game.objects.get(id=game_id)
         if game:
             data = json.loads(game.scrambler_data)
             text = Scrambler(data['tables']).scramble(format_text)

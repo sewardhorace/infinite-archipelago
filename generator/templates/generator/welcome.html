@@ -5,49 +5,16 @@
 
 <script>
 $(function() {
+  //TODO: use of ajaxSetup() is not recommended
   $.ajaxSetup({
-    headers: { "X-CSRFToken": getCookie("csrftoken") }
+    headers: { "X-CSRFToken": helpers.getCookie("csrftoken") }
   });
   requests.loadGame({{ game_id }}, function (data) {
-    var components = data.game.components.map(function(c) {
-      return new Component(c);
-    });
-    seaMapper.components = components;
-    seaMapper.gameID = data.game.id;
-    seaMapper.start();
-    console.log("loaded game " + seaMapper.gameID);
+    game.load(data);
   });
+  helpers.setEventHandlers();
 });
 
-$("form#generator").submit(function (e) {
-	e.preventDefault();
-  var key = $("#generator option:selected").val();
-  var text = $("#generator [name='" + key + "']").text();
-  var gameID = 69;
-  var data = {
-    text: text,
-    gameID: gameID
-  };
-  requests.generate(data, function (data) {
-    $("#content").html(data.detail);
-  });
-});
-
-$("form#sync").submit(function (e) {
-  e.preventDefault();
-  // console.log("blsh");
-  // var key = $("#generator option:selected").val();
-  // var text = $("#generator [name='" + key + "']").text();
-  // var gameID = 69;
-  // var data = {
-  //   text: text,
-  //   gameID: gameID
-  // };
-  // requests.generate(data, function (data) {
-  //   console.log("done");
-  //   console.log(data);
-  // });
-});
 </script>
 {% endblock %}
 
@@ -55,24 +22,28 @@ $("form#sync").submit(function (e) {
 
 <div class="container">
   <div class="row">
-  	<div class="col-md-12 text-center">
-  		<h1>Infinite Archipelago</h1>
-  		<div>- Generate Infinite Content -</div>
-      <div>
-        <p>Here's a guide and stuff.  You can do this and that and blah blah blah.</p>
-        It's neat. You can create random tables in a Google Sheet and link it here, and 
-        your endpoints will be available for instant generation. Nested random tables, without 
-        any rolling. Also, map your games out. Drag important details between locations. You're the boss! Try it out below.
-      </div>
-      <div>
-        Sign up to save your content:
+    <div class="col-md-4 text-center">
+      <form class="form" role="form" method="post" action="signup/" accept-charset="UTF-8" id="signup-form">
+        {% csrf_token %}
+        <div class="form-group">
+          <input type="text" class="form-control" name="username" placeholder="Username">
+        </div>
+        <div class="form-group">
+          <input type="password" class="form-control" name="password" placeholder="Password">
+        </div>
+        <button type="submit" class="btn btn-default">Create Account</button>
+      </form>
+    </div>
 
-      </div>
-  	</div>
+    <div class="col-md-12 text-center">
+      <h1 id="name-input">[project-name]</h1>
+    </div>
 
     <div class="col-md-12">
+
       <canvas id="canvas" width="500" height="500" style="border:1px solid #000000;">
       </canvas>
+
       <form id="component-form">
         <button id="component-delete">x</button>
         <input id="component-name" type="text" placeholder="(not named)"></input>
@@ -86,6 +57,7 @@ $("form#sync").submit(function (e) {
         </div>
         <button id="detail-new">New</button>
       </form>
+
     </div>
 
     <div class="col-md-4"></div>
@@ -93,46 +65,27 @@ $("form#sync").submit(function (e) {
     <div class="col-md-4">
       <div class="text-center"><a href="/deletecreds">Delete Credentials</a></div>
 
-      <form class="form" role="form" id="generator" class="text-center" method="post">
+      <form class="form" role="form" id="scrambler" class="text-center" method="post">
       {% csrf_token %}
         <div class="form-group">
-          <label for="endpoints">Select Content to Generate:</label>
-          <select class="form-control" id="endpoints">
-            {% for key, val in endpoints.items %}
-            <option>{{key}}</option>
-            {% endfor %}
+          <label for="endpoint-select">Select Content to Generate:</label>
+          <select class="form-control" id="endpoint-select">
+            <!-- populated by javascript -->
           </select>
         </div>
         <div class="form-group">
           <button type="submit" class="btn btn-primary btn-block">Submit</button>
         </div>
-        <div hidden="true">
-          {% for key, val in endpoints.items %}
-          <div name="{{key}}">{{val}}</div>
-          {% endfor %}
+        <div id="endpoint-data" hidden="true">
+          <!-- populated by javascript -->
         </div>
       </form>
       <div class="form-group">
-        <textarea class="form-control" rows="10" id="content"></textarea>
+        <textarea class="form-control" rows="10" id="scrambler-content"></textarea>
       </div>
 
-      <form class="form" role="form" id="sync" class="text-center" method="post">
-        {% csrf_token %}
-        <div class="form-group">
-          <label for="inputSheetURL">Google Sheet URL</label>
-          <input class="form-control" type="url" id="inputSheetURL" name="sheet-url" placeholder="game.sheet_url">
-        </div>
-        <div class="form-group">
-          <button type="submit" class="btn btn-primary btn-block">Sync Sheet Data</button>
-        </div>
-      </form>
-
-    </div>
-
-    <div class="col-md-4"></div>
-
     <div class="col-md-12 text-center">
-      <img src="{% static "generator/img/ruins.png" %}" alt="My image"/>
+      <img src="{% static "generator/img/ruins.png" %}" alt="Ruins"/>
     </div>
 
   </div> <!-- row -->
@@ -141,4 +94,5 @@ $("form#sync").submit(function (e) {
 <script src="{% static "generator/js/helpers.js" %}"></script>
 <script src="{% static "generator/js/requests.js" %}"></script>
 <script src="{% static "generator/js/mapper.js" %}"></script>
+<script src="{% static "generator/js/game.js" %}"></script>
 {% endblock %}

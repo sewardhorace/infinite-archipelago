@@ -5,7 +5,9 @@ var game = {
 		this.loadName(data);
 		this.loadMap(data);
 		this.loadScrambler(data);
-		this.loadSyncUI(data);
+		if (document.getElementById('sync')){
+			this.loadSyncUI(data);
+		}
 		console.log("loaded game " + data.game.name);
 	},
 	loadName: function(data) {
