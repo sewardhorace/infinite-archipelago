@@ -1,3 +1,5 @@
+import json
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
@@ -11,10 +13,10 @@ class CredentialsModel(models.Model):
   credential = CredentialsField()
 
 class Game(models.Model):
-  name = models.CharField(max_length=50, default='', blank=True)
+  name = models.CharField(max_length=50, default='New Campaign', blank=True)
   user = models.ForeignKey(User, on_delete=models.CASCADE)
-  scrambler_data = JSONField()
-  scrambler_endpoints = JSONField()
+  scrambler_data = JSONField(blank=True, default=json.dumps(dict()))
+  scrambler_endpoints = JSONField(blank=True, default=json.dumps(dict()))
   sheet_url = models.URLField(null=True)
   # map_pan
   # map_zoom

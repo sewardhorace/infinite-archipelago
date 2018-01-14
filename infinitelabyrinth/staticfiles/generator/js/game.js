@@ -11,7 +11,7 @@ var game = {
 		console.log("loaded game " + data.game.name);
 	},
 	loadName: function(data) {
-		document.getElementById("name-input").innerHTML = data.game.name;
+		document.getElementById("name-input").value = data.game.name;
 	},
 	loadMap: function(data) {
 		var components = data.game.components.map(function(c) {

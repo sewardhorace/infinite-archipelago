@@ -101,6 +101,35 @@ def game_load(request, game_id):
     response = dict(game=game)
     return JsonResponse(response)
 
+def game_create(request):
+    #TODO: does this need to be more flexible? (ex. creating game with name, scrambler data)
+    #TODO: load newly created game on the frontend
+    response = dict()
+    if request.method == 'POST':
+        game = Game.objects.create(user_id=request.user.id)
+        game.save()
+        response['game'] = dict(Game.objects.filter(id=game.id).values()[0])
+        return JsonResponse(response)
+    else:
+        #TODO
+        return JsonResponse(response)
+
+def game_update(request):
+    response = dict()
+    if request.method == 'POST':
+        game_data = json.loads(request.body.decode('utf-8'))
+        game = get_object_or_404(Game, id=int(game_data['id']))
+        form = GameForm(game_data, instance=game)
+        if form.is_valid():
+            form.save()
+            response['game'] = dict(Game.objects.filter(id=game.id).values()[0])
+            return JsonResponse(response)
+        else:
+            #TODO
+            print(form.errors)
+            print('invalid form')
+    return JsonResponse(response)
+
 def components_create(request):
     response = dict()
     if request.method == 'POST':
@@ -148,6 +177,7 @@ def details_create(request):
             return JsonResponse(response)
         else:
             # TODO
+            print(form.errors)
             print("suk it")
     return JsonResponse(response)
 

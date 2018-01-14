@@ -11,6 +11,14 @@ var requests = {
         URL: '/api/game/',
         TYPE: 'GET',
       },
+      CREATE: {
+        URL: '/api/game/create/',
+        TYPE: 'POST',
+      },
+      UPDATE: {
+        URL: '/api/game/update/',
+        TYPE: 'POST',
+      },
     },
     COMPONENT: {
       CREATE: {
@@ -66,8 +74,27 @@ var requests = {
       callback: callback,
     });
   },
+  createGame: function (data, callback) {
+    var gameData = {};
+    this.request({
+      url: this.URLS.GAME.CREATE.URL,
+      type: this.URLS.GAME.CREATE.TYPE,
+      data: gameData,
+      callback: callback,
+    });
+  },
   updateGame: function (data, callback) {
-    //save current pan/zoom
+    //TODO: save current pan/zoom
+    var gameData = {
+      id: data.id,
+      name: data.name,
+    };
+    this.request({
+      url: this.URLS.GAME.UPDATE.URL,
+      type: this.URLS.GAME.UPDATE.TYPE,
+      data: gameData,
+      callback: callback,
+    });
   },
   createComponent: function (data, callback) {
     var componentData = {
