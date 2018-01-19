@@ -1,3 +1,7 @@
+.navbar-inverse {
+	background-color: #111;
+}
+
 input#name-input {
 	font-size: 20px;
 	font-weight: bold;
@@ -18,7 +22,7 @@ input#name-input {
 }
 
 #scrambler button {
-	background-color: black;
+	background-color: #111;
 	width: 25%;
 	border-radius: 0 2px 2px 0;
 }
@@ -38,7 +42,7 @@ input#name-input {
 }
 
 #sync button {
-	background-color: black;
+	background-color: #111;
 	width: 25%;
 	border-radius: 0 2px 2px 0;
 }

@@ -6,7 +6,8 @@
 canvas#canvas {
 	display:inline-block;
 	vertical-align: top;
-	border: none;
+	border-radius: 2px 0 0 2px;
+/*	border: 2px solid #111;*/
 }
 
 form#component-form {
@@ -14,14 +15,14 @@ form#component-form {
 	width: 300px;
 	display:inline-block;
 	vertical-align: top;
-	background-color: black;
+	background-color: #111;
 	border-radius: 0 2px 2px 0;
 	padding: 4px;
 	margin-left: -4px;
 }
 
 #component-delete {
-	margin-left: -10px;
+	margin-left: -8px;
   margin-top: 2px;
 	padding: 0px 4px;
 	font-size: 16px;
@@ -33,7 +34,7 @@ form#component-form {
 #component-name {
 	border: none;
 	outline: none;
-	background-color: black;
+	background-color: #111;
 	color: white;
 	font-weight: bold;
 }
@@ -65,7 +66,7 @@ form#component-form {
 	display: block;
 	padding: 0px 4px;
 	border-radius: 2px;
-	background-color: black;
+	background-color: #111;
 	color: white;
 	border:none;
 }
@@ -79,7 +80,7 @@ form#component-form {
 
 #detail-new {
 	background-color: white;
-	color: black;
+	color: #111;
 	border: none;
 	border-radius: 2px;
   outline: none;

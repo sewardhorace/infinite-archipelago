@@ -4,8 +4,8 @@
 
 var SCALE = 1;
 var LINEWIDTH = SCALE*0.05;
-var SEACOLOR = '#42b3f4';
-var GRIDCOLOR = '#418cf4';
+var SEACOLOR = '#F5DEB3';
+var GRIDCOLOR = '#B3CAF5';
 var ACTIVECOLOR = 'green';
 var HOVERCOLOR = 'white';
 var INACTIVECOLOR = 'red';
