@@ -34,10 +34,12 @@ var game = {
 	},
 	loadSyncUI: function(data) {
 		document.getElementById("inputSheetGameID").value = data.game.id;
+		var input = document.getElementById("inputSheetURL");
 		if (data.game.sheet_url) {
-			document.getElementById("inputSheetURL").setAttribute("placeholder", data.game.sheet_url);
+			input.setAttribute("placeholder", data.game.sheet_url);
+			input.value = data.game.sheet_url;
 		} else {
-			document.getElementById("inputSheetURL").setAttribute("placeholder", "www.example.com/sheet");
+			input.setAttribute("placeholder", "www.example.com/sheet");
 		}
 	},
 };

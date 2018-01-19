@@ -228,12 +228,13 @@ def generate(request):
         return JsonResponse({'status':'false','message':message}, status=500)
 
 def sync_sheet(request):
+    # possible error: oauth credentials can expire (?) but this will still try to use the old creds
     # TODO: loading spinner on the frontend while processing
     # TODO: ensure game id is provided; if no URL provided, fall back to last URL used
     if request.user.is_authenticated and request.method == 'POST':
-        sheet_url = request.POST.get("sheet-url")
         game_id = request.POST.get("game-id")
-        print("user %s is authenticated" % (request.user.username))
+        game = get_object_or_404(Game, id=game_id)
+        sheet_url = request.POST.get("sheet-url") or game.sheet_url
         result = None
         storage = DjangoORMStorage(CredentialsModel, 'id', request.user, 'credential')
         credentials = storage.get()
@@ -245,8 +246,6 @@ def sync_sheet(request):
             return HttpResponseRedirect(auth_uri)
         else:
             print('credentials are solid, dude')
-            game = get_object_or_404(Game, id=game_id)
-
             # google sheets API
             http = httplib2.Http()
             http = credentials.authorize(http)
@@ -258,8 +257,6 @@ def sync_sheet(request):
             #TODO: cleaner error handling/fallback
             if sheet_url:
                 spreadsheetId = parse_sheet_url(sheet_url)
-            elif game.sheet_url:
-                spreadsheetId = game.sheet_id
             else:
                 return HttpResponseBadRequest()
             # return a spreadsheet collection
