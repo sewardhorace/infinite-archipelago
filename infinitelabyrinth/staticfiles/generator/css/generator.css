@@ -6,20 +6,21 @@ input#name-input {
 	outline: none;
 }
 
+.scrambler-ui {
+	margin-top: 6px;
+	margin-bottom: 50px;
+}
+
 #endpoint-select {
 	width: 75%;
 	margin-right: -4px;
-	border-radius: 4px 0 0 4px;
-}
-
-.scrambler-ui {
-	margin-bottom: 50px;
+	border-radius: 2px 0 0 2px;
 }
 
 #scrambler button {
 	background-color: black;
 	width: 25%;
-	border-radius: 0 4px 4px 0;
+	border-radius: 0 2px 2px 0;
 }
 
 #scrambler-content {
@@ -32,12 +33,12 @@ input#name-input {
 #inputSheetURL {
 	width: 75%;
 	margin-right: -4px;
-	border-radius: 4px 0 0 4px;
+	border-radius: 2px 0 0 2px;
 	text-overflow: ellipsis;
 }
 
 #sync button {
 	background-color: black;
 	width: 25%;
-	border-radius: 0 4px 4px 0;
+	border-radius: 0 2px 2px 0;
 }

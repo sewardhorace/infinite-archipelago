@@ -1,23 +1,28 @@
 .mapper-ui {
-	margin: 10px 0;
+	margin: 14px 0;
+	text-align: center;
 }
 
 canvas#canvas {
 	display:inline-block;
-	float: left;
+	vertical-align: top;
 	border: none;
 }
 
 form#component-form {
 	height: 500px;
-	width: 400px;
+	width: 300px;
 	display:inline-block;
+	vertical-align: top;
 	background-color: black;
 	border-radius: 0 2px 2px 0;
 	padding: 4px;
+	margin-left: -4px;
 }
 
 #component-delete {
+	margin-left: -10px;
+  margin-top: 2px;
 	padding: 0px 4px;
 	font-size: 16px;
 	border-radius: 2px;
@@ -34,6 +39,8 @@ form#component-form {
 }
 
 #component-category {
+	margin-right: 2px;
+  margin-top: 2px;
 	float:right;
 	background-color: white;
 	border: none;
@@ -43,8 +50,8 @@ form#component-form {
 }
 
 #detail-display {
-	height: 430px;
-	margin: 4px 0;
+	height: 432px;
+	margin: 6px 0;
 	overflow: auto;
 }
 
@@ -71,8 +78,6 @@ form#component-form {
 }
 
 #detail-new {
-	position: absolute;
-	bottom: 4px;
 	background-color: white;
 	color: black;
 	border: none;
