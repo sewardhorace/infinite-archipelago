@@ -1,0 +1,43 @@
+input#name-input {
+	font-size: 20px;
+	font-weight: bold;
+	text-align: center;
+	border: none;
+	outline: none;
+}
+
+#endpoint-select {
+	width: 75%;
+	margin-right: -4px;
+	border-radius: 4px 0 0 4px;
+}
+
+.scrambler-ui {
+	margin-bottom: 50px;
+}
+
+#scrambler button {
+	background-color: black;
+	width: 25%;
+	border-radius: 0 4px 4px 0;
+}
+
+#scrambler-content {
+	border: none;
+	outline: none;
+	box-shadow: none;
+}
+
+
+#inputSheetURL {
+	width: 75%;
+	margin-right: -4px;
+	border-radius: 4px 0 0 4px;
+	text-overflow: ellipsis;
+}
+
+#sync button {
+	background-color: black;
+	width: 25%;
+	border-radius: 0 4px 4px 0;
+}

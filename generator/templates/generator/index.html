@@ -15,21 +15,6 @@ $(function() {
   helpers.setEventHandlers();
 });
 
-//broken: ajax request will not allow redirect to oauth page
-// $("form#sync").submit(function (e) {
-//   e.preventDefault();
-//   console.log($("#inputSheetURL").val());
-//   var sheetURL = $("#inputSheetURL").val();
-//   var gameID = 69;
-//   var data = {
-//     sheetURL: sheetURL,
-//     gameID: gameID
-//   };
-//   requests.syncSheet(data, function (data) {
-//     console.log("done");
-//     console.log(data);
-//   });
-// });
 </script>
 {% endblock %}
 
@@ -38,47 +23,45 @@ $(function() {
 <div class="container">
   <div class="row">
   	<div class="col-md-12 text-center">
-  		<!-- <h1 id="name-input">[project-name]</h1> -->
       <input id="name-input" type="text" placeholder="(campaign name)"></input>
   	</div>
 
-    <div class="col-md-12">
+    <div class="col-md-12 mapper-ui">
 
-      <canvas id="canvas" width="500" height="500" style="border:1px solid #000000;">
+      <canvas id="canvas" width="500" height="500">
       </canvas>
 
       <form id="component-form">
-        <button id="component-delete">x</button>
-        <input id="component-name" type="text" placeholder="(not named)"></input>
-        <select id="component-category">
-          {% for category, display in categories %}
-          <option value="{{ category }}">{{ display }}</option>
-          {% endfor %}
-        </select>
-        <div id="detail-display">
-          <textarea>Blah</textarea>
+        <div class="component-header">
+          <button id="component-delete">&#10006;</button>
+          <input id="component-name" type="text" placeholder="(not named)"></input>
+          <select id="component-category">
+            {% for category, display in categories %}
+            <option value="{{ category }}">{{ display }}</option>
+            {% endfor %}
+          </select>
         </div>
-        <button id="detail-new">New</button>
+        <div id="detail-display">
+          <textarea></textarea>
+        </div>
+        <div class="component-footer">
+          <button id="detail-new">Add New Detail</button>
+        </div>
       </form>
 
     </div>
 
     <div class="col-md-4"></div>
 
-    <div class="col-md-4">
-      <div class="text-center"><a href="/deletecreds">Delete Credentials</a></div>
+    <div class="col-md-4 scrambler-ui">
 
-      <form class="form" role="form" id="scrambler" class="text-center" method="post">
-      {% csrf_token %}
-        <div class="form-group">
-          <label for="endpoint-select">Select Content to Generate:</label>
-          <select class="form-control" id="endpoint-select">
-            <!-- populated by javascript -->
-          </select>
-        </div>
-        <div class="form-group">
-          <button type="submit" class="btn btn-primary btn-block">Submit</button>
-        </div>
+      <form class="form-inline" role="form" id="scrambler" class="text-center" method="post">
+        {% csrf_token %}
+        <label for="endpoint-select">Select Content to Generate:</label>
+        <select class="form-control" id="endpoint-select">
+          <!-- populated by javascript -->
+        </select>
+        <button type="submit" class="btn btn-primary">Submit</button>
         <div id="endpoint-data" hidden="true">
           <!-- populated by javascript -->
         </div>
@@ -87,27 +70,14 @@ $(function() {
         <textarea class="form-control" rows="10" id="scrambler-content"></textarea>
       </div>
 
-      <form class="form" role="form" id="sync" class="text-center" method="post" action="/api/sync/">
+      <form class="form-inline" role="form" id="sync" class="text-center" method="post" action="/api/sync/">
         {% csrf_token %}
-        <div class="form-group">
-          <label for="inputSheetURL">Google Sheet URL</label>
+          <label for="inputSheetURL">Google Sheet URL:</label>
           <input class="form-control" type="url" id="inputSheetURL" name="sheet-url">
           <input hidden="true" type="number" id="inputSheetGameID" name="game-id">
-        </div>
-        <div class="form-group">
-          <button type="submit" class="btn btn-primary btn-block">Sync Sheet Data</button>
-        </div>
+          <button type="submit" class="btn btn-primary">Sync</button>
       </form>
 
-    </div>
-
-    <div class="col-md-4">
-      <form class="form" role="form" id="sync" class="text-center" method="post" action="/deletecreds/">
-        {% csrf_token %}
-        <div class="form-group">
-          <button type="submit" class="btn btn-primary btn-block">Delete Credentials</button>
-        </div>
-      </form>
     </div>
 
   </div> <!-- row -->

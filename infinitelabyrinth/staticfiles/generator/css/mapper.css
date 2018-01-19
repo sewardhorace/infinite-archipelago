@@ -1,3 +1,81 @@
-p {
-	color: blue;
+.mapper-ui {
+	margin: 10px 0;
+}
+
+canvas#canvas {
+	display:inline-block;
+	float: left;
+	border: none;
+}
+
+form#component-form {
+	height: 500px;
+	width: 400px;
+	display:inline-block;
+	background-color: black;
+	border-radius: 0 2px 2px 0;
+	padding: 4px;
+}
+
+#component-delete {
+	padding: 0px 4px;
+	font-size: 16px;
+	border-radius: 2px;
+	background-color: white;
+	border:none;
+}
+
+#component-name {
+	border: none;
+	outline: none;
+	background-color: black;
+	color: white;
+	font-weight: bold;
+}
+
+#component-category {
+	float:right;
+	background-color: white;
+	border: none;
+	border-radius: 2px;
+  padding: 2px;
+  outline: none;
+}
+
+#detail-display {
+	height: 430px;
+	margin: 4px 0;
+	overflow: auto;
+}
+
+.detail {
+	padding: 4px;
+	border-radius: 2px;
+	border: none;
+}
+
+.detail button {
+	display: block;
+	padding: 0px 4px;
+	border-radius: 2px;
+	background-color: black;
+	color: white;
+	border:none;
+}
+
+.detail textarea {
+	width: 100%;
+	margin-bottom: -5px;
+	resize: vertical;
+	border:none;
+}
+
+#detail-new {
+	position: absolute;
+	bottom: 4px;
+	background-color: white;
+	color: black;
+	border: none;
+	border-radius: 2px;
+  outline: none;
 }

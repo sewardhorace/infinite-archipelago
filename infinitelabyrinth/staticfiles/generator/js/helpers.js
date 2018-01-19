@@ -34,7 +34,7 @@ var helpers = {
           game.load(data);
 
         });
-      })
+      });
     }
   },
   handleNameInputChange: function(e) {

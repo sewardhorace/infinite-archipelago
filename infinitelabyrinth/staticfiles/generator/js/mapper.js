@@ -404,14 +404,16 @@ var mapper = {
       var detail = details[i];
 
       var textarea = document.createElement('textarea');
+      textarea.setAttribute('rows', 3);
       textarea.value = detail.content;
       textarea.addEventListener('input', this.handleDetailInput.bind(this), false);
 
       var deleteButton = document.createElement('button');
-      deleteButton.innerHTML = 'x';
+      deleteButton.innerHTML = '&#10006;';
       deleteButton.addEventListener('click', this.handleDetailDeleteButton.bind(this));
 
       var frame = document.createElement('div');
+      frame.setAttribute('class', 'detail');
       frame.setAttribute('draggable', true);
       frame.setAttribute('data-id', detail.id);
       frame.setAttribute('data-component-id', detail.component_id);

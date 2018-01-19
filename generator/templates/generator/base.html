@@ -4,8 +4,9 @@
 <html>
 <head>
 <title>Infinite Labyrinth</title>
-  <link rel="stylesheet" type="text/css" href="{% static "generator/css/mapper.css" %}">
   <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="{% static "generator/css/generator.css" %}">
+  <link rel="stylesheet" type="text/css" href="{% static "generator/css/mapper.css" %}">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
   <script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 </head>
@@ -23,7 +24,7 @@
           Games <span class="caret"></span>
         </a>
         <ul id="games-dropdown" class="dropdown-menu">
-          {% for game in user.game_set.all %}
+          {% for game in user.game_set.all reversed %}
           <li><a data-id="{{ game.id }}" href="#">{{ game.name }}</a></li>
           {% endfor %}
           <li class="divider"></li>
