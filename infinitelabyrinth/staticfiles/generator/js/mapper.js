@@ -1,14 +1,31 @@
 //TODO: clean up globals
 //TODO: draw component names on the map? checkbox to toggle on and off?
 //TODO: need to display something after active component is deleted
+//TODO: persistent pan/zoom and add recenter button
+//TODO: fix grid rendering
+//TODO: zoom relative to cursor, not upper left corner
 
 var SCALE = 1;
 var LINEWIDTH = SCALE*0.05;
-var SEACOLOR = '#F5DEB3';
+var SEACOLOR = '#FFFBD1';
 var GRIDCOLOR = '#B3CAF5';
 var ACTIVECOLOR = 'green';
 var HOVERCOLOR = 'white';
 var INACTIVECOLOR = 'red';
+
+var img = {
+  location: new Image(),
+  party: new Image(),
+  creature: new Image(),
+  transport: new Image(),
+  other: new Image()
+};
+img.location.src = 'static/generator/img/location.png';
+img.party.src = 'static/generator/img/party.png';
+img.creature.src = 'static/generator/img/creature.png';
+img.transport.src = 'static/generator/img/transport.png';
+img.other.src = 'static/generator/img/other.png';
+
 
 function Component (obj) {
   this.id = obj.id || null;
@@ -24,21 +41,36 @@ function Component (obj) {
     hover: HOVERCOLOR,
     inactive: INACTIVECOLOR
   };
-  this.width = 1;
-  this.height = 1;
+  this.width = 2;
+  this.height = 2;
   this.contains = function (x, y) {
     return this.x <= x && x <= this.x + this.width &&
            this.y <= y && y <= this.y + this.height;
   };
   this.draw = function (ctx) {
     if (this.isActive) {
-      ctx.fillStyle = this.colors.active;
+      ctx.beginPath();
+      ctx.arc(this.x + 1, this.y + 1, 1.5, 0, 2*Math.PI, false);
+      ctx.fillStyle="rgba(224, 255, 71, 0.55)";
+      ctx.fill();
     } else if (this.hover) {
-      ctx.fillStyle = this.colors.hover;
-    } else {
-      ctx.fillStyle = this.colors.inactive
+      ctx.beginPath();
+      ctx.arc(this.x + 1, this.y + 1, 1.25, 0, 2*Math.PI, false);
+      ctx.strokeStyle="rgba(224, 255, 71, 0.55)";
+      ctx.lineWidth=0.5;
+      ctx.stroke();
+    } 
+    if (this.category == 'L') {
+      ctx.drawImage(img.location, this.x, this.y, this.width, this.height);
+    } else if (this.category == 'P') {
+      ctx.drawImage(img.party, this.x, this.y, this.width, this.height);
+    } else if (this.category == 'C') {
+      ctx.drawImage(img.creature, this.x, this.y, this.width, this.height);
+    } else if (this.category == 'T') {
+      ctx.drawImage(img.transport, this.x, this.y, this.width, this.height);
+    } else if (this.category == 'O') {
+      ctx.drawImage(img.other, this.x, this.y, this.width, this.height);
     }
-    ctx.fillRect(this.x, this.y, this.width, this.height);
   };
 };
 
@@ -271,6 +303,7 @@ var mapper = {
     var component = this.getActiveComponent()
     component.category = e.target.value;
     this.updateComponent(component);
+    this.draw();
   },
   displayComponent: function (component) {
     //TODO: display something when no component is active

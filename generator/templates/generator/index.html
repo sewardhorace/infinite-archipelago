@@ -32,23 +32,23 @@ $(function() {
       <canvas id="canvas" width="600" height="500">
       </canvas>
 
-      <form id="component-form">
-        <div class="component-header">
-          <button id="component-delete">&#10006;</button>
-          <input id="component-name" type="text" placeholder="(not named)"></input>
-          <select id="component-category">
-            {% for category, display in categories %}
-            <option value="{{ category }}">{{ display }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div id="detail-display">
-          <textarea></textarea>
-        </div>
-        <div class="component-footer">
-          <button id="detail-new">Add New Detail</button>
-        </div>
-      </form>
+        <form id="component-form">
+          <div class="component-header">
+            <button id="component-delete">&#10006;</button>
+            <input id="component-name" type="text" placeholder="(not named)"></input>
+            <select id="component-category">
+              {% for category, display in categories %}
+              <option value="{{ category }}">{{ display }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div id="detail-display">
+            <textarea></textarea>
+          </div>
+          <div class="component-footer">
+            <button id="detail-new">Add New Detail</button>
+          </div>
+        </form>
       </div>
     </div>
 
