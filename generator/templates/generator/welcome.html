@@ -69,20 +69,14 @@ $(function() {
 
     <div class="col-md-4"></div>
 
-    <div class="col-md-4">
-      <div class="text-center"><a href="/deletecreds">Delete Credentials</a></div>
-
-      <form class="form" role="form" id="scrambler" class="text-center" method="post">
-      {% csrf_token %}
-        <div class="form-group">
-          <label for="endpoint-select">Select Content to Generate:</label>
-          <select class="form-control" id="endpoint-select">
-            <!-- populated by javascript -->
-          </select>
-        </div>
-        <div class="form-group">
-          <button type="submit" class="btn btn-primary btn-block">Submit</button>
-        </div>
+    <div class="col-md-4 scrambler-ui">
+      <form class="form-inline" role="form" id="scrambler" class="text-center" method="post">
+        {% csrf_token %}
+        <label for="endpoint-select">Select Content to Generate:</label>
+        <select class="form-control" id="endpoint-select">
+          <!-- populated by javascript -->
+        </select>
+        <button type="submit" class="btn btn-primary">Submit</button>
         <div id="endpoint-data" hidden="true">
           <!-- populated by javascript -->
         </div>
@@ -90,6 +84,8 @@ $(function() {
       <div class="form-group">
         <textarea class="form-control" rows="10" id="scrambler-content"></textarea>
       </div>
+    </div>
+
 
     <div class="col-md-12 text-center">
       <img src="{% static "generator/img/ruins.png" %}" alt="Ruins"/>
