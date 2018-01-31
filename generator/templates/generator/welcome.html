@@ -40,24 +40,31 @@ $(function() {
     </div>
 
     <div class="col-md-12">
+      <div class="mapper-ui">
 
-      <canvas id="canvas" width="500" height="500" style="border:1px solid #000000;">
+      <canvas id="canvas" width="600" height="500">
       </canvas>
 
-      <form id="component-form">
-        <button id="component-delete">x</button>
-        <input id="component-name" type="text" placeholder="(not named)"></input>
-        <select id="component-category">
-          {% for category, display in categories %}
-          <option value="{{ category }}">{{ display }}</option>
-          {% endfor %}
-        </select>
-        <div id="detail-display">
-          <textarea>Blah</textarea>
-        </div>
-        <button id="detail-new">New</button>
-      </form>
+        <form id="component-form">
+          <div class="component-header">
+            <button id="component-delete">&#10006;</button>
+            <input id="component-name" type="text" placeholder="(not named)"></input>
+            <select id="component-category">
+              {% for category, display in categories %}
+              <option value="{{ category }}">{{ display }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div id="detail-display">
+            <textarea></textarea>
+          </div>
+          <div class="component-footer">
+            <button id="detail-new">Add New Detail</button>
+          </div>
 
+          <div class="component-none">No Element Selected</div>
+        </form>
+      </div>
     </div>
 
     <div class="col-md-4"></div>

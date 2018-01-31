@@ -50,6 +50,16 @@ form#component-form {
   outline: none;
 }
 
+.component-none {
+	display: none;
+	color: #9d9d9d;
+	font-weight: bold;
+	background-color: #111;
+	margin: auto;
+	position: relative;
+	top: 40%;
+}
+
 #detail-display {
 	height: 432px;
 	margin: 6px 0;

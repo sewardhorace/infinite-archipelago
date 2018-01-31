@@ -268,6 +268,7 @@ var mapper = {
         requests.deleteComponent({id:component.id}, function (data) {
           components.splice(idx, 1);
           self.draw();
+          self.displayComponent(null);
         });
       }
     }
@@ -309,11 +310,20 @@ var mapper = {
     //TODO: display something when no component is active
     this.draw();
     if (component) {
+      this.detailsDiv.style.display = 'block';
+      document.getElementsByClassName("component-header")[0].style.display = 'block';
+      document.getElementsByClassName("component-footer")[0].style.display = 'block';
+      document.getElementsByClassName("component-none")[0].style.display = 'none';
+
       this.componentNameInput.value = component.name;
       this.componentCategorySelect.value = component.category;
       this.displayDetails(component.details);
     } else {
+      this.detailsDiv.style.display = 'none';
+      document.getElementsByClassName("component-header")[0].style.display = 'none';
+      document.getElementsByClassName("component-footer")[0].style.display = 'none';
       console.log("ain't no component active");
+      document.getElementsByClassName("component-none")[0].style.display = 'block';
     }
   },
   addNewDetail: function () {
