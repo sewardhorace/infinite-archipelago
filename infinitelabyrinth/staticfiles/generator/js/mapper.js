@@ -1,17 +1,9 @@
-//TODO: clean up globals
-//TODO: draw component names on the map? checkbox to toggle on and off?
-//TODO: need to display something after active component is deleted
-//TODO: persistent pan/zoom and add recenter button
-//TODO: fix grid rendering
-//TODO: zoom relative to cursor, not upper left corner
 
-var SCALE = 1;
-var LINEWIDTH = SCALE*0.05;
-var SEACOLOR = '#FFFBD1';
-var GRIDCOLOR = '#B3CAF5';
-var ACTIVECOLOR = 'green';
-var HOVERCOLOR = 'white';
-var INACTIVECOLOR = 'red';
+//TODO: draw component names on the map? checkbox to toggle on and off?
+//TODO: persistent pan/zoom and add recenter button
+//TODO: zoom relative to cursor, not upper left corner
+//TODO: allow dragging scrambler text onto map to create new component/detail
+
 
 var img = {
   location: new Image(),
@@ -30,24 +22,19 @@ img.other.src = 'static/generator/img/other.png';
 function Component (obj) {
   this.id = obj.id || null;
   this.name = obj.name || '';
-  this.x = obj.x*SCALE;
-  this.y = obj.y*SCALE;
+  this.x = obj.x * 1; //for some reason this breaks if '* 1' is removed...
+  this.y = obj.y * 1;
   this.isActive = obj.isActive || false;
   this.category = obj.category || '';
   this.details = obj.details || [];
   this.hover = false;
-  this.colors = {
-    active: ACTIVECOLOR,
-    hover: HOVERCOLOR,
-    inactive: INACTIVECOLOR
-  };
   this.width = 2;
   this.height = 2;
   this.contains = function (x, y) {
     return this.x <= x && x <= this.x + this.width &&
            this.y <= y && y <= this.y + this.height;
   };
-  this.draw = function (ctx) {
+  this.draw = function (ctx, drawName = false) {
     if (this.isActive) {
       ctx.beginPath();
       ctx.arc(this.x + 1, this.y + 1, 1.5, 0, 2*Math.PI, false);
@@ -70,6 +57,12 @@ function Component (obj) {
       ctx.drawImage(img.transport, this.x, this.y, this.width, this.height);
     } else if (this.category == 'O') {
       ctx.drawImage(img.other, this.x, this.y, this.width, this.height);
+    }
+    if (drawName) {
+      ctx.font = ".75px Courier";
+      ctx.fillStyle = "black";
+      ctx.textAlign = "center";
+      ctx.fillText(this.name, this.x + 1.1, this.y + 3);
     }
   };
 };
@@ -221,6 +214,7 @@ var mapper = {
     var delta = e.wheelDelta ? e.wheelDelta/120 : 0;
     if (delta) {
       var factor = 1+delta/10;
+      console.log("Scale: " + this.transforms.scaleFactor);
       this.transforms.scaleFactor *= factor;
       this.draw();
     }
@@ -492,38 +486,42 @@ var mapper = {
   panView: function (delta) {
     this.transforms.panX = this.transforms.prevPanX + delta.x;
     this.transforms.panY = this.transforms.prevPanY + delta.y;
+    console.log("PanX: " + this.transforms.panX + "; PanY: " + this.transforms.panY);
   },
-  drawGrid: function () {
-    var ctx = this.context;
-    for (var i = SCALE; i < this.canvas.width; i+=SCALE) {
+  drawGrid: function (ctx) {
+    for (var i = (this.transforms.panX % 1) * this.transforms.scaleFactor; i < this.canvas.width; i+=this.transforms.scaleFactor) {
       ctx.beginPath();
       ctx.moveTo(i, 0);
       ctx.lineTo(i, this.canvas.height);
-      ctx.lineWidth = LINEWIDTH;
-      ctx.strokeStyle = GRIDCOLOR;
+      ctx.lineWidth = 0.05 * this.transforms.scaleFactor;
+      ctx.strokeStyle = '#B3CAF5';
       ctx.stroke();
     }
-    for (var i = SCALE; i < this.canvas.height; i+=SCALE) {
+    for (var i = (this.transforms.panY % 1) * this.transforms.scaleFactor; i < this.canvas.height; i+=this.transforms.scaleFactor) {
       ctx.beginPath();
       ctx.moveTo(0, i);
       ctx.lineTo(this.canvas.width, i);
-      ctx.lineWidth=LINEWIDTH;
-      ctx.strokeStyle = GRIDCOLOR;
+      ctx.lineWidth = 0.05 * this.transforms.scaleFactor;
+      ctx.strokeStyle = '#B3CAF5';
       ctx.stroke();
     }
   },
   draw: function () {
     var ctx = this.context;
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    ctx.fillStyle = SEACOLOR;
+    ctx.fillStyle = '#FFFBD1';
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    this.drawGrid(ctx);
+
     ctx.save();
     ctx.scale(this.transforms.scaleFactor, this.transforms.scaleFactor);
     ctx.translate(this.transforms.panX, this.transforms.panY);
-    this.drawGrid();
+    // this.drawGrid();
     for (var i = 0; i < this.components.length; i++) {
-      this.components[i].draw(ctx);
+      this.components[i].draw(ctx, true);
     }
     ctx.restore();
+
   }
 };
