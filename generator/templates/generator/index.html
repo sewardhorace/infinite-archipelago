@@ -88,6 +88,11 @@ $(function() {
           <button type="submit" class="btn btn-primary">Sync</button>
       </form>
 
+      <form class="form-inline" role="form" class="text-center" method="post" action="/deletecreds/">
+        {% csrf_token %}
+          <button type="submit" class="btn btn-primary">Delete Credentials</button>
+      </form>
+
     </div>
 
   </div> <!-- row -->

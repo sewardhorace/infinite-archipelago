@@ -239,13 +239,11 @@ def sync_sheet(request):
         storage = DjangoORMStorage(CredentialsModel, 'id', request.user, 'credential')
         credentials = storage.get()
         if credentials is None or credentials.invalid == True:
-            print('verifying credentials...')
             flow.params['state'] = xsrfutil.generate_token(settings.SECRET_KEY, request.user)
             flow.redirect_uri = '%s%s' % (request.META['HTTP_REFERER'],'oauth2callback')
             auth_uri = flow.step1_get_authorize_url()
             return HttpResponseRedirect(auth_uri)
         else:
-            print('credentials are solid, dude')
             # google sheets API
             http = httplib2.Http()
             http = credentials.authorize(http)
@@ -261,13 +259,11 @@ def sync_sheet(request):
                 return HttpResponseBadRequest()
             # return a spreadsheet collection
             result = service.spreadsheets().get(spreadsheetId=spreadsheetId, includeGridData=True).execute()
-            
             data = process_sheet_data(result)
             game.scrambler_endpoints = json.dumps(data.pop('endpoints', None))
             game.scrambler_data = json.dumps(data)
             game.sheet_url = sheet_url
             game.save()
-            print('Successfully synced sheet ID %s with game %d, %s' % (spreadsheetId, game.id, game.name))
             return HttpResponseRedirect("/")
     else:
         return HttpResponseBadRequest()
@@ -280,6 +276,7 @@ def oauth2_callback(request):
     credentials = flow.step2_exchange(request.GET.dict()['code'])
     storage = DjangoORMStorage(CredentialsModel, 'id', request.user, 'credential')
     storage.put(credentials)
+    # TODO: need to somehow call the sync_sheet view again but need the user and game_id
     return HttpResponseRedirect("/")
 
 def delete_creds(request):
