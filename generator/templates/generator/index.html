@@ -29,8 +29,8 @@ $(function() {
     <div class="col-md-12">
       <div class="mapper-ui">
 
-      <canvas id="canvas" width="600" height="500">
-      </canvas>
+        <canvas id="canvas" width="600" height="500">
+        </canvas>
 
         <form id="component-form">
           <div class="component-header">
@@ -51,6 +51,13 @@ $(function() {
 
           <div class="component-none">No Element Selected</div>
         </form>
+
+        <div class="mapper-footer">
+          <input type="checkbox" id="mapper-names-toggle">
+          <label>Show Names</label>
+          <button id="mapper-recenter">Recenter</button>
+        </div>
+
       </div>
     </div>
 

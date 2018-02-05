@@ -1,7 +1,7 @@
 
 //TODO: draw component names on the map? checkbox to toggle on and off?
 //TODO: persistent pan/zoom and add recenter button
-//TODO: zoom relative to cursor, not upper left corner
+//TODO: zoom relative to cursor, not upper left corner of map
 //TODO: allow dragging scrambler text onto map to create new component/detail
 
 
@@ -75,8 +75,10 @@ var mapper = {
   componentCategorySelect : document.getElementById('component-category'),
   detailsDiv : document.getElementById("detail-display"),
   detailNewButton : document.getElementById('detail-new'),
+  namesToggle : document.getElementById('mapper-names-toggle'),
+  recenterButton : document.getElementById('mapper-recenter'),
   transforms : {
-    scaleFactor : 10.00,
+    scaleFactor : 20.00,
     panX : 0,
     panY : 0,
     prevPanX : 0,
@@ -104,6 +106,9 @@ var mapper = {
     this.componentNameInput.addEventListener('input', this.handleComponentNameInput.bind(this), false);
     this.componentCategorySelect.addEventListener('change', this.handleComponentCategorySelect.bind(this), false);
     this.detailNewButton.addEventListener("click", this.handleDetailNewButton.bind(this), false);
+
+    this.namesToggle.addEventListener("change", this.handleNamesToggle.bind(this), false);
+    this.recenterButton.addEventListener("click", this.handleRecenterButton.bind(this), false);
 
     this.displayComponent(this.getActiveComponent());
   },
@@ -214,8 +219,8 @@ var mapper = {
     var delta = e.wheelDelta ? e.wheelDelta/120 : 0;
     if (delta) {
       var factor = 1+delta/10;
-      console.log("Scale: " + this.transforms.scaleFactor);
       this.transforms.scaleFactor *= factor;
+      console.log(this.transforms.scaleFactor);
       this.draw();
     }
   },
@@ -352,7 +357,6 @@ var mapper = {
       console.log('success');
       self.displayDetails(self.getActiveComponent().details);
     });
-    // this.displayDetails(this.getActiveComponent().details);
   },
   moveDetail: function (detailData, component) {
     var detail = this.popDetailFromComponent(detailData);
@@ -435,7 +439,6 @@ var mapper = {
     });
   },
   displayDetails: function (details) {
-    //TODO: fix event bubbling so users can highlight text in the textarea (rather than dragging)
     this.detailsDiv.innerHTML = "";
     for (var i=0; i<details.length; i++) {
       var detail = details[i];
@@ -483,10 +486,26 @@ var mapper = {
       this.detailsDiv.append(frame);
     }
   },
+  handleNamesToggle: function (e) {
+    if (this.namesToggle.checked == true){
+      this.showNames = true;
+    } else {
+      this.showNames = false;
+    }
+    this.draw();
+  },
+  handleRecenterButton: function (e) {
+    e.preventDefault();
+    this.transforms.scaleFactor = 20.00;
+    this.transforms.panX = 0;
+    this.transforms.panY = 0;
+    this.transforms.prevPanX = 0;
+    this.transforms.prevPanY = 0;
+    this.draw();
+  },
   panView: function (delta) {
     this.transforms.panX = this.transforms.prevPanX + delta.x;
     this.transforms.panY = this.transforms.prevPanY + delta.y;
-    console.log("PanX: " + this.transforms.panX + "; PanY: " + this.transforms.panY);
   },
   drawGrid: function (ctx) {
     for (var i = (this.transforms.panX % 1) * this.transforms.scaleFactor; i < this.canvas.width; i+=this.transforms.scaleFactor) {
@@ -511,15 +530,13 @@ var mapper = {
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     ctx.fillStyle = '#FFFBD1';
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
     this.drawGrid(ctx);
-
     ctx.save();
+
     ctx.scale(this.transforms.scaleFactor, this.transforms.scaleFactor);
     ctx.translate(this.transforms.panX, this.transforms.panY);
-    // this.drawGrid();
     for (var i = 0; i < this.components.length; i++) {
-      this.components[i].draw(ctx, true);
+      this.components[i].draw(ctx, this.showNames);
     }
     ctx.restore();
 
