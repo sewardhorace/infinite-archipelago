@@ -4,7 +4,7 @@ from .models import Game, Component, Detail
 class GameForm(ModelForm):
     class Meta:
         model = Game
-        fields = ['name', 'scrambler_data', 'scrambler_endpoints']
+        fields = ['name', 'scrambler_data', 'scrambler_endpoints', 'map_transforms', 'map_names_toggle']
 
 class ComponentForm(ModelForm):
     class Meta:

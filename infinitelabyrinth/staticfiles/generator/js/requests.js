@@ -1,6 +1,7 @@
 //TODO: jquery to pure javascript
 
 var requests = {
+  gameUpdateTimeout: null,
   componentUpdateTimeout: null,
   componentUpdateQueue: [],
   detailUpdateTimeout: null,
@@ -88,6 +89,8 @@ var requests = {
     var gameData = {
       id: data.id,
       name: data.name,
+      map_transforms: data.map_transforms,
+      map_names_toggle: data.map_names_toggle,
     };
     this.request({
       url: this.URLS.GAME.UPDATE.URL,

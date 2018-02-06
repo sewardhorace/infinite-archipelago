@@ -14,12 +14,7 @@ var game = {
 		document.getElementById("name-input").value = data.game.name;
 	},
 	loadMap: function(data) {
-		var components = data.game.components.map(function(c) {
-      return new Component(c);
-    });
-    mapper.components = components;
-    mapper.gameID = data.game.id;
-    mapper.start();
+    mapper.start(data.game);
 	},
 	loadScrambler: function(data) {
 		var endpoints = data.game.endpoints;

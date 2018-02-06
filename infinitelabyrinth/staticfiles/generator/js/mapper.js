@@ -77,14 +77,29 @@ var mapper = {
   detailNewButton : document.getElementById('detail-new'),
   namesToggle : document.getElementById('mapper-names-toggle'),
   recenterButton : document.getElementById('mapper-recenter'),
-  transforms : {
+  defaultTransforms : {
     scaleFactor : 20.00,
     panX : 0,
     panY : 0,
     prevPanX : 0,
     prevPanY : 0
   },
-  start: function () {
+  load: function (data) {
+    var components = data.components.map(function(c) {
+      return new Component(c);
+    });
+    this.components = components;
+    this.gameID = data.id;
+    if (data.map_transforms.hasOwnProperty('panX')) {
+      this.transforms = data.map_transforms
+    } else {
+      this.transforms = this.defaultTransforms
+    }
+    this.showNames = data.map_names_toggle || false;
+    this.namesToggle.checked = this.showNames;
+  },
+  start: function (data) {
+    this.load(data);
     this.context = this.canvas.getContext("2d");
     this.canvas.addEventListener('click', this.handleClick.bind(this), false);
     this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this), false);
@@ -220,9 +235,22 @@ var mapper = {
     if (delta) {
       var factor = 1+delta/10;
       this.transforms.scaleFactor *= factor;
-      console.log(this.transforms.scaleFactor);
+      this.updateGame();
       this.draw();
     }
+  },
+  updateGame: function () {
+    var data = {
+      id : this.gameID,
+      map_transforms : this.transforms,
+      map_names_toggle : this.showNames,
+    };
+    clearTimeout(requests.gameUpdateTimeout);
+    requests.gameUpdateTimeout = setTimeout(function () {
+      requests.updateGame(data, function (data) {
+        console.log('success');
+      });
+    }, 1000);
   },
   addNewComponent: function (mousePos) {
     //TODO: display something while ajax request is in progress/confirm success
@@ -492,20 +520,19 @@ var mapper = {
     } else {
       this.showNames = false;
     }
+    this.updateGame();
     this.draw();
   },
   handleRecenterButton: function (e) {
     e.preventDefault();
-    this.transforms.scaleFactor = 20.00;
-    this.transforms.panX = 0;
-    this.transforms.panY = 0;
-    this.transforms.prevPanX = 0;
-    this.transforms.prevPanY = 0;
+    this.transforms = this.defaultTransforms;
+    this.updateGame();
     this.draw();
   },
   panView: function (delta) {
     this.transforms.panX = this.transforms.prevPanX + delta.x;
     this.transforms.panY = this.transforms.prevPanY + delta.y;
+    this.updateGame();
   },
   drawGrid: function (ctx) {
     for (var i = (this.transforms.panX % 1) * this.transforms.scaleFactor; i < this.canvas.width; i+=this.transforms.scaleFactor) {

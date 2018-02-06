@@ -18,8 +18,8 @@ class Game(models.Model):
   scrambler_data = JSONField(blank=True, default=json.dumps(dict()))
   scrambler_endpoints = JSONField(blank=True, default=json.dumps(dict()))
   sheet_url = models.URLField(null=True)
-  # map_pan
-  # map_zoom
+  map_transforms = JSONField(blank=True, default=json.dumps(dict()))
+  map_names_toggle = models.BooleanField(default=False)
 
   def __str__(self):
     if len(self.name) > 0:
